@@ -81,7 +81,7 @@ Each backend service is organized by feature: its module, controller, service an
 
 ## Data model
 
-Prisma schema: `packages/database/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.
+Prisma schemas: `backend/orders-service/prisma/schema.prisma` and `backend/products-service/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.
 
 SQL sources compatible with database modelling tools: `database-schema/orders.sql` and `database-schema/products.sql`.
 
