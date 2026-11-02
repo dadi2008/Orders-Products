@@ -73,6 +73,8 @@ npm run test
 npm run build
 ```
 
+The frontend uses Next.js Core Web Vitals linting. Backend services use the typed NestJS ESLint recommended rules with Swagger rules disabled because this API does not expose an OpenAPI contract.
+
 ## Data model
 
 Prisma schema: `packages/database/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.

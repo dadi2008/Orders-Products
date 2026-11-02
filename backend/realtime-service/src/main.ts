@@ -29,12 +29,12 @@ class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
-  handleConnection(@ConnectedSocket() client: Socket) {
-    client.join("presence");
-    this.publish();
+  async handleConnection(@ConnectedSocket() client: Socket) {
+    await client.join("presence");
+    await this.publish();
   }
 
-  handleDisconnect() { this.publish(); }
+  async handleDisconnect() { await this.publish(); }
 
   private async publish() {
     const clients = await this.server.in("presence").fetchSockets();
@@ -54,4 +54,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3003);
 }
 
-bootstrap();
+void bootstrap();

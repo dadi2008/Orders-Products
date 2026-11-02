@@ -2,10 +2,10 @@ import "reflect-metadata";
 import { Body, Controller, Delete, Get, HttpException, Injectable, Module, Param, Post, Query } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance } from "axios";
 
 @Injectable()
-class InventoryApi {
+export class InventoryApi {
   private readonly orders: AxiosInstance;
   private readonly products: AxiosInstance;
 
@@ -14,13 +14,19 @@ class InventoryApi {
     this.products = axios.create({ baseURL: config.get("PRODUCTS_SERVICE_URL") ?? "http://localhost:3002", timeout: 5000 });
   }
 
-  async request(service: AxiosInstance, path: string, options: Record<string, unknown> = {}) {
+  async request<T = unknown>(service: AxiosInstance, path: string, options: Record<string, unknown> = {}): Promise<T> {
     try {
-      const response = await service.request({ url: path, ...options });
+      const response = await service.request<T>({ url: path, ...options });
       return response.data;
-    } catch (error: any) {
-      const status = error.response?.status ?? 503;
-      throw new HttpException(error.response?.data ?? "Upstream service unavailable", status);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        const status = axiosError.response?.status ?? 503;
+        const data = axiosError.response?.data;
+        const response = typeof data === "string" || (typeof data === "object" && data !== null) ? data : "Upstream service unavailable";
+        throw new HttpException(response, status);
+      }
+      throw new HttpException("Upstream service unavailable", 503);
     }
   }
 
@@ -29,7 +35,7 @@ class InventoryApi {
 }
 
 @Controller("api")
-class ApiController {
+export class ApiController {
   constructor(private readonly api: InventoryApi) {}
 
   @Get("health")
@@ -58,7 +64,7 @@ class ApiController {
 }
 
 @Module({ imports: [ConfigModule.forRoot({ isGlobal: true })], controllers: [ApiController], providers: [InventoryApi] })
-class AppModule {}
+export class AppModule {}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -66,4 +72,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 3000);
 }
 
-bootstrap();
+void bootstrap();

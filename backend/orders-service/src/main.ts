@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Injectable
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ClientKafka, ClientsModule, Transport } from "@nestjs/microservices";
 import { NestFactory } from "@nestjs/core";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
 
@@ -18,6 +18,15 @@ class CreateOrderDto {
   @MaxLength(500)
   description?: string;
 }
+
+type OrderWithProducts = Prisma.OrderGetPayload<{
+  include: { products: { include: { prices: true } } };
+}>;
+
+type OrderSummary = OrderWithProducts & {
+  productCount: number;
+  totals: Record<string, number>;
+};
 
 @Injectable()
 class PrismaService extends PrismaClient {
@@ -61,11 +70,14 @@ class OrdersService {
     return order;
   }
 
-  private toOrderSummary(order: any) {
-    const totals = order.products.flatMap((product: any) => product.prices).reduce((result: Record<string, number>, price: any) => {
-      result[price.currency] = (result[price.currency] ?? 0) + Number(price.value);
-      return result;
-    }, {});
+  private toOrderSummary(order: OrderWithProducts): OrderSummary {
+    const amountsByCurrency = order.products
+      .flatMap((product) => product.prices)
+      .reduce((result, price) => {
+        result.set(price.currency, (result.get(price.currency) ?? 0) + Number(price.value));
+        return result;
+      }, new Map<string, number>());
+    const totals = Object.fromEntries(amountsByCurrency);
     return { ...order, productCount: order.products.length, totals };
   }
 }
@@ -104,8 +116,8 @@ class AppModule {}
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({ origin: true });
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true, forbidUnknownValues: true }));
   await app.listen(process.env.PORT ?? 3001);
 }
 
-bootstrap();
+void bootstrap();
