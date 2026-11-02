@@ -7,8 +7,8 @@ let add: ((left: number, right: number) => number) | undefined;
 
 export async function sum(values: number[]) {
   if (!add && typeof WebAssembly !== "undefined") {
-    const module = await WebAssembly.instantiate(additionModule);
-    add = module.instance.exports.add as (left: number, right: number) => number;
+    const instanceResult = await WebAssembly.instantiate(additionModule);
+    add = instanceResult.instance.exports.add as (left: number, right: number) => number;
   }
   return values.reduce((total, value) => add ? add(total, value) : total + value, 0);
 }

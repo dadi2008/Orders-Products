@@ -75,7 +75,7 @@ npm run build
 
 ## Data model
 
-Prisma schema: `packages/database/prisma/schema.prisma`.
+Prisma schema: `packages/database/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.
 
 SQL relational diagram source compatible with database modelling tools: `database-schema.sql`.
 

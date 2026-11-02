@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronDown, PlusLg, Trash3 } from "react-bootstrap-icons";
+import { ChevronDown, Trash3 } from "react-bootstrap-icons";
 import { ProductImage } from "../../components/product-image";
 import { inventoryApi } from "../../lib/api";
 import { formatDate, formatLongDate, formatMoney, statusLabel } from "../../lib/format";

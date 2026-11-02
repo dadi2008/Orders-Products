@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney } from "../apps/web/lib/format";
+import { formatMoney } from "../frontend/lib/format";
 
 describe("currency formatting", () => {
   it("formats the total with the selected currency", () => {
