@@ -21,8 +21,7 @@ export default tseslint.config(
   nestjs.configs.flatNoSwagger,
   {
     rules: {
-      "@typescript-eslint/no-extraneous-class": ["error", { allowWithDecorator: true }],
-      "@darraghor/nestjs-typed/injectable-should-be-provided": "off"
+      "@typescript-eslint/no-extraneous-class": ["error", { allowWithDecorator: true }]
     }
   }
 );

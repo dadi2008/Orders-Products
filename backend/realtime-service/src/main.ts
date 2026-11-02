@@ -1,49 +1,7 @@
 import "reflect-metadata";
-import { Module } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
-import { IoAdapter } from "@nestjs/platform-socket.io";
-import { ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { createAdapter } from "@socket.io/redis-adapter";
-import Redis from "ioredis";
-import { Server, Socket } from "socket.io";
-
-class RedisIoAdapter extends IoAdapter {
-  private adapterConstructor!: ReturnType<typeof createAdapter>;
-
-  async connectToRedis(url: string) {
-    const publisher = new Redis(url);
-    const subscriber = publisher.duplicate();
-    await Promise.all([publisher.ping(), subscriber.ping()]);
-    this.adapterConstructor = createAdapter(publisher, subscriber);
-  }
-
-  createIOServer(port: number, options?: Record<string, unknown>) {
-    const server = super.createIOServer(port, options) as Server;
-    server.adapter(this.adapterConstructor);
-    return server;
-  }
-}
-
-@WebSocketGateway({ cors: { origin: true } })
-class PresenceGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer()
-  server!: Server;
-
-  async handleConnection(@ConnectedSocket() client: Socket) {
-    await client.join("presence");
-    await this.publish();
-  }
-
-  async handleDisconnect() { await this.publish(); }
-
-  private async publish() {
-    const clients = await this.server.in("presence").fetchSockets();
-    this.server.emit("presence", { activeSessions: clients.length });
-  }
-}
-
-@Module({ providers: [PresenceGateway] })
-class AppModule {}
+import { AppModule } from "./app.module";
+import { RedisIoAdapter } from "./infrastructure/redis-io.adapter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

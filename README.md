@@ -75,6 +75,8 @@ npm run build
 
 The frontend uses Next.js Core Web Vitals linting. Backend services use the typed NestJS ESLint recommended rules with Swagger rules disabled because this API does not expose an OpenAPI contract.
 
+Each backend service is organized by feature: its module, controller, service and DTOs reside together under `src/<feature>/`, while one-time database and transport setup resides in `src/database/` or `src/infrastructure/`.
+
 ## Data model
 
 Prisma schema: `packages/database/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.
