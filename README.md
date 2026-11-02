@@ -32,6 +32,8 @@ docker compose up --build
 
 Open `http://localhost:3005`. The migration container creates the database schema and seeds sample records before the API services start.
 
+Set `ORDERS_POSTGRES_PASSWORD` and `PRODUCTS_POSTGRES_PASSWORD` in `.env` before launching Docker Compose. The two PostgreSQL instances are isolated: Orders owns `orders-postgres`, Products owns `products-postgres`.
+
 Stop the stack with:
 
 ```bash
@@ -81,7 +83,7 @@ Each backend service is organized by feature: its module, controller, service an
 
 Prisma schema: `packages/database/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.
 
-SQL relational diagram source compatible with database modelling tools: `database-schema.sql`.
+SQL sources compatible with database modelling tools: `database-schema/orders.sql` and `database-schema/products.sql`.
 
 ## REST API
 

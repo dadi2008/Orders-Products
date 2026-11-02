@@ -1,15 +1,6 @@
 CREATE TYPE "ProductCondition" AS ENUM ('NEW', 'USED');
 CREATE TYPE "ProductStatus" AS ENUM ('AVAILABLE', 'IN_REPAIR', 'ASSIGNED');
 
-CREATE TABLE "Order" (
-  "id" SERIAL NOT NULL,
-  "title" TEXT NOT NULL,
-  "description" TEXT,
-  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP(3) NOT NULL,
-  CONSTRAINT "Order_pkey" PRIMARY KEY ("id")
-);
-
 CREATE TABLE "Product" (
   "id" SERIAL NOT NULL,
   "serialNumber" TEXT NOT NULL,
@@ -23,6 +14,7 @@ CREATE TABLE "Product" (
   "guaranteeEnd" TIMESTAMP(3) NOT NULL,
   "receivedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "orderId" INTEGER NOT NULL,
+  "orderTitle" TEXT NOT NULL,
   CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
 
@@ -39,6 +31,4 @@ CREATE UNIQUE INDEX "Product_serialNumber_key" ON "Product"("serialNumber");
 CREATE INDEX "Product_type_idx" ON "Product"("type");
 CREATE INDEX "Product_orderId_idx" ON "Product"("orderId");
 CREATE UNIQUE INDEX "Price_productId_currency_key" ON "Price"("productId", "currency");
-CREATE INDEX "Order_createdAt_idx" ON "Order"("createdAt");
-ALTER TABLE "Product" ADD CONSTRAINT "Product_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "Price" ADD CONSTRAINT "Price_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;

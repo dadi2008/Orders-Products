@@ -1,17 +1,31 @@
 services:
-  postgres:
+  orders-postgres:
     image: postgres:17-alpine
     environment:
-      POSTGRES_DB: inventory
-      POSTGRES_USER: inventory
-      POSTGRES_PASSWORD: inventory
+      POSTGRES_DB: orders
+      POSTGRES_USER: orders
+      POSTGRES_PASSWORD: ${ORDERS_POSTGRES_PASSWORD:?ORDERS_POSTGRES_PASSWORD is required}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U inventory -d inventory"]
+      test: ["CMD-SHELL", "pg_isready -U orders -d orders"]
       interval: 5s
       timeout: 5s
       retries: 10
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - orders_postgres_data:/var/lib/postgresql/data
+
+  products-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: products
+      POSTGRES_USER: products
+      POSTGRES_PASSWORD: ${PRODUCTS_POSTGRES_PASSWORD:?PRODUCTS_POSTGRES_PASSWORD is required}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U products -d products"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - products_postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7.4-alpine
@@ -41,11 +55,14 @@ services:
     build:
       context: .
       target: base
-    command: sh -c "npx prisma migrate deploy --schema packages/database/prisma/schema.prisma && npm run db:seed"
+    command: sh -c "npx prisma migrate deploy --config backend/orders-service/prisma.config.ts && npx prisma migrate deploy --config backend/products-service/prisma.config.ts && npm run db:seed"
     environment:
-      DATABASE_URL: postgresql://inventory:inventory@postgres:5432/inventory?schema=public
+      ORDERS_DATABASE_URL: postgresql://orders:${ORDERS_POSTGRES_PASSWORD:?ORDERS_POSTGRES_PASSWORD is required}@orders-postgres:5432/orders?schema=public
+      PRODUCTS_DATABASE_URL: postgresql://products:${PRODUCTS_POSTGRES_PASSWORD:?PRODUCTS_POSTGRES_PASSWORD is required}@products-postgres:5432/products?schema=public
     depends_on:
-      postgres:
+      orders-postgres:
+        condition: service_healthy
+      products-postgres:
         condition: service_healthy
 
   orders-service:
@@ -56,7 +73,7 @@ services:
     command: node backend/orders-service/dist/main.js
     environment:
       PORT: 3001
-      DATABASE_URL: postgresql://inventory:inventory@postgres:5432/inventory?schema=public
+      ORDERS_DATABASE_URL: postgresql://orders:${ORDERS_POSTGRES_PASSWORD:?ORDERS_POSTGRES_PASSWORD is required}@orders-postgres:5432/orders?schema=public
       KAFKA_BROKERS: kafka:9092
     depends_on:
       migrate:
@@ -72,7 +89,7 @@ services:
     command: node backend/products-service/dist/main.js
     environment:
       PORT: 3002
-      DATABASE_URL: postgresql://inventory:inventory@postgres:5432/inventory?schema=public
+      PRODUCTS_DATABASE_URL: postgresql://products:${PRODUCTS_POSTGRES_PASSWORD:?PRODUCTS_POSTGRES_PASSWORD is required}@products-postgres:5432/products?schema=public
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -124,4 +141,5 @@ services:
       - "3005:3000"
 
 volumes:
-  postgres_data:
+  orders_postgres_data:
+  products_postgres_data:

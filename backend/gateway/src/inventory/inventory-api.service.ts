@@ -12,9 +12,9 @@ export class InventoryApiService {
     this.products = axios.create({ baseURL: config.get("PRODUCTS_SERVICE_URL") ?? "http://localhost:3002", timeout: 5000 });
   }
 
-  order(path: string, options?: Record<string, unknown>) { return this.request(this.orders, path, options); }
+  order<T = unknown>(path: string, options?: Record<string, unknown>) { return this.request<T>(this.orders, path, options); }
 
-  product(path: string, options?: Record<string, unknown>) { return this.request(this.products, path, options); }
+  product<T = unknown>(path: string, options?: Record<string, unknown>) { return this.request<T>(this.products, path, options); }
 
   private async request<T = unknown>(service: AxiosInstance, path: string, options: Record<string, unknown> = {}): Promise<T> {
     try {

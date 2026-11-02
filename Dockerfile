@@ -6,7 +6,6 @@ COPY backend/orders-service/package.json backend/orders-service/package.json
 COPY backend/products-service/package.json backend/products-service/package.json
 COPY backend/realtime-service/package.json backend/realtime-service/package.json
 COPY frontend/package.json frontend/package.json
-COPY packages/database/package.json packages/database/package.json
 RUN npm install
 COPY . .
 ARG GATEWAY_URL=http://gateway:3000
