@@ -17,7 +17,7 @@ The frontend is split by business domains into Orders and Products feature appli
 | Service | Responsibility | Port |
 | --- | --- | --- |
 | `web` | Next.js shell and domain UI modules | 3005 |
-| `gateway` | Single REST entry point and service routing | 3100 |
+| `gateway` | Single REST entry point and service routing | internal 3000, proxied through web |
 | `orders-service` | Order commands, order aggregation and Kafka events | internal 3001 |
 | `products-service` | Product queries and type filtering | internal 3002 |
 | `realtime-service` | Socket.IO presence with Redis adapter | 3003 |
