@@ -1,14 +1,14 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
 import { Prisma } from "../generated/prisma/client";
-import { PrismaService } from "../database/prisma.service";
+import { OrdersPrismaService } from "../database/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 
 type OrderRecord = Prisma.OrderGetPayload<Record<string, never>>;
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: PrismaService, @Inject("EVENTS") private readonly events: ClientKafka) {}
+  constructor(private readonly prisma: OrdersPrismaService, @Inject("EVENTS") private readonly events: ClientKafka) {}
 
   findAll(): Promise<OrderRecord[]> {
     return this.prisma.order.findMany({ orderBy: { createdAt: "desc" } });

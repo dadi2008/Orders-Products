@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../database/prisma.service";
+import { ProductsPrismaService } from "../database/prisma.service";
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: ProductsPrismaService) {}
   async findAll(type?: string) {
     const products = await this.prisma.product.findMany({ where: type ? { type } : undefined, include: { prices: true }, orderBy: { receivedAt: "desc" } });
     return products.map((product) => ({ ...product, order: { id: product.orderId, title: product.orderTitle } }));

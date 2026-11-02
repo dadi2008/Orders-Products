@@ -3,7 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client";
 
 @Injectable()
-export class PrismaService extends PrismaClient {
+export class OrdersPrismaService extends PrismaClient {
   constructor() {
     const connectionString = process.env.ORDERS_DATABASE_URL;
     if (!connectionString) throw new Error("ORDERS_DATABASE_URL is required");
