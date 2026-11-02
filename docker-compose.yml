@@ -37,9 +37,10 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
 
   migrate:
+    image: orders-products-app:local
     build:
       context: .
-      target: gateway
+      target: base
     command: sh -c "npx prisma migrate deploy --schema packages/database/prisma/schema.prisma && npm run db:seed"
     environment:
       DATABASE_URL: postgresql://inventory:inventory@postgres:5432/inventory?schema=public
@@ -48,9 +49,11 @@ services:
         condition: service_healthy
 
   orders-service:
+    image: orders-products-app:local
     build:
       context: .
-      target: orders
+      target: base
+    command: node apps/orders-service/dist/main.js
     environment:
       PORT: 3001
       DATABASE_URL: postgresql://inventory:inventory@postgres:5432/inventory?schema=public
@@ -62,9 +65,11 @@ services:
         condition: service_started
 
   products-service:
+    image: orders-products-app:local
     build:
       context: .
-      target: products
+      target: base
+    command: node apps/products-service/dist/main.js
     environment:
       PORT: 3002
       DATABASE_URL: postgresql://inventory:inventory@postgres:5432/inventory?schema=public
@@ -73,9 +78,11 @@ services:
         condition: service_completed_successfully
 
   realtime-service:
+    image: orders-products-app:local
     build:
       context: .
-      target: realtime
+      target: base
+    command: node apps/realtime-service/dist/main.js
     environment:
       PORT: 3003
       REDIS_URL: redis://redis:6379
@@ -86,9 +93,11 @@ services:
       - "3003:3003"
 
   gateway:
+    image: orders-products-app:local
     build:
       context: .
-      target: gateway
+      target: base
+    command: node apps/gateway/dist/main.js
     environment:
       PORT: 3000
       ORDERS_SERVICE_URL: http://orders-service:3001
@@ -102,9 +111,11 @@ services:
       - "3000:3000"
 
   web:
+    image: orders-products-app:local
     build:
       context: .
-      target: web
+      target: base
+    command: npm run start -w @inventory/web
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3000/api
       NEXT_PUBLIC_SOCKET_URL: http://localhost:3003
