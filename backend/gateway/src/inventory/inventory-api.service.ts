@@ -8,15 +8,35 @@ export class InventoryApiService {
   private readonly products: AxiosInstance;
 
   constructor(config: ConfigService) {
-    this.orders = axios.create({ baseURL: config.get("ORDERS_SERVICE_URL") ?? "http://localhost:3001", timeout: 5000 });
-    this.products = axios.create({ baseURL: config.get("PRODUCTS_SERVICE_URL") ?? "http://localhost:3002", timeout: 5000 });
+    this.orders = axios.create({
+      baseURL: config.get("ORDERS_SERVICE_URL") ?? "http://localhost:3001",
+      timeout: 5000,
+    });
+    this.products = axios.create({
+      baseURL: config.get("PRODUCTS_SERVICE_URL") ?? "http://localhost:3002",
+      timeout: 5000,
+    });
   }
 
-  order<T = unknown>(path: string, options?: Record<string, unknown>) { return this.request<T>(this.orders, path, options); }
+  order<T = unknown>(
+    path: string,
+    options?: Record<string, unknown>,
+  ): Promise<T> {
+    return this.request<T>(this.orders, path, options);
+  }
 
-  product<T = unknown>(path: string, options?: Record<string, unknown>) { return this.request<T>(this.products, path, options); }
+  product<T = unknown>(
+    path: string,
+    options?: Record<string, unknown>,
+  ): Promise<T> {
+    return this.request<T>(this.products, path, options);
+  }
 
-  private async request<T = unknown>(service: AxiosInstance, path: string, options: Record<string, unknown> = {}): Promise<T> {
+  private async request<T = unknown>(
+    service: AxiosInstance,
+    path: string,
+    options: Record<string, unknown> = {},
+  ): Promise<T> {
     try {
       const response = await service.request<T>({ url: path, ...options });
       return response.data;
@@ -25,7 +45,11 @@ export class InventoryApiService {
         const axiosError = error as AxiosError;
         const status = axiosError.response?.status ?? 503;
         const data = axiosError.response?.data;
-        const response = typeof data === "string" || (typeof data === "object" && data !== null) ? data : "Upstream service unavailable";
+        const response =
+          typeof data === "string" ||
+          (typeof data === "object" && data !== null)
+            ? data
+            : "Upstream service unavailable";
         throw new HttpException(response, status);
       }
       throw new HttpException("Upstream service unavailable", 503);

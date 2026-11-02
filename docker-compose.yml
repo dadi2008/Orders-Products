@@ -90,9 +90,12 @@ services:
     environment:
       PORT: 3002
       PRODUCTS_DATABASE_URL: postgresql://products:${PRODUCTS_POSTGRES_PASSWORD:?PRODUCTS_POSTGRES_PASSWORD is required}@products-postgres:5432/products?schema=public
+      KAFKA_BROKERS: kafka:9092
     depends_on:
       migrate:
         condition: service_completed_successfully
+      kafka:
+        condition: service_started
 
   realtime-service:
     image: orders-products-app:local

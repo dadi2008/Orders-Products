@@ -1,6 +1,9 @@
 import { Module } from "@nestjs/common";
-import { InventoryApiService } from "./inventory-api.service";
-import { InventoryController } from "./inventory.controller";
+import { InventoryApiService } from "inventory/inventory-api.service";
+import { InventoryController } from "inventory/inventory.controller";
 
-@Module({ controllers: [InventoryController], providers: [InventoryApiService] })
+@Module({
+  controllers: [InventoryController],
+  providers: [InventoryApiService],
+})
 export class InventoryModule {}

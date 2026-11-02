@@ -14,15 +14,16 @@ Inventory management application built from the provided test specification. It 
 
 The frontend is split by business domains into Orders and Products feature applications behind a shared shell. The backend has independently deployable bounded services:
 
-| Service | Responsibility | Port |
-| --- | --- | --- |
-| `web` | Next.js shell and domain UI modules | 3005 |
-| `gateway` | Single REST entry point and service routing | internal 3000, proxied through web |
-| `orders-service` | Order commands, order aggregation and Kafka events | internal 3001 |
-| `products-service` | Product queries and type filtering | internal 3002 |
-| `realtime-service` | Socket.IO presence with Redis adapter | 3003 |
-| `postgres` | Persistent inventory data | internal 5432 |
-| `kafka` | `inventory.order.created` and `inventory.order.deleted` event stream | internal 9092 |
+| Service             | Responsibility                                                       | Port                               |
+| ------------------- | -------------------------------------------------------------------- | ---------------------------------- |
+| `web`               | Next.js shell and domain UI modules                                  | 3005                               |
+| `gateway`           | Single REST entry point and service routing                          | internal 3000, proxied through web |
+| `orders-service`    | Order commands, order aggregation and Kafka events                   | internal 3001                      |
+| `products-service`  | Product queries, type filtering and order-deletion event consumption | internal 3002                      |
+| `realtime-service`  | Socket.IO presence with Redis adapter                                | 3003                               |
+| `orders-postgres`   | Orders service data store                                            | internal 5432                      |
+| `products-postgres` | Products service data store                                          | internal 5432                      |
+| `kafka`             | `inventory.order.deleted` event stream                               | internal 9092                      |
 
 ## Start with Docker
 
@@ -31,6 +32,8 @@ docker compose up --build
 ```
 
 Open `http://localhost:3005`. The migration container creates the database schema and seeds sample records before the API services start.
+
+Deleting an order is eventually consistent: orders-service persists the deletion and emits `inventory.order.deleted`; products-service consumes that event in the `products-service-orders` group and idempotently removes the associated products.
 
 Set `ORDERS_POSTGRES_PASSWORD` and `PRODUCTS_POSTGRES_PASSWORD` in `.env` before launching Docker Compose. The two PostgreSQL instances are isolated: Orders owns `orders-postgres`, Products owns `products-postgres`.
 
@@ -87,11 +90,11 @@ SQL sources compatible with database modelling tools: `database-schema/orders.sq
 
 ## REST API
 
-| Method | Route | Description |
-| --- | --- | --- |
-| `GET` | `/api/health` | Gateway health status |
-| `GET` | `/api/orders` | Orders with product count and totals |
-| `POST` | `/api/orders` | Create order with `title` and optional `description` |
-| `DELETE` | `/api/orders/:id` | Delete order and attached products |
-| `GET` | `/api/products` | Products; optional `type` query filter |
-| `GET` | `/api/products/types` | Available product types |
+| Method   | Route                 | Description                                          |
+| -------- | --------------------- | ---------------------------------------------------- |
+| `GET`    | `/api/health`         | Gateway health status                                |
+| `GET`    | `/api/orders`         | Orders with product count and totals                 |
+| `POST`   | `/api/orders`         | Create order with `title` and optional `description` |
+| `DELETE` | `/api/orders/:id`     | Delete order and attached products                   |
+| `GET`    | `/api/products`       | Products; optional `type` query filter               |
+| `GET`    | `/api/products/types` | Available product types                              |

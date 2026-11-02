@@ -2,7 +2,10 @@
   "name": "orders-products-platform",
   "version": "1.0.0",
   "private": true,
-  "workspaces": ["frontend", "backend/*"],
+  "workspaces": [
+    "frontend",
+    "backend/*"
+  ],
   "scripts": {
     "dev": "concurrently -n web,gateway,orders,products,realtime -c cyan,green,yellow,magenta,blue \"npm run dev -w @inventory/web\" \"PORT=3100 npm run dev -w @inventory/gateway\" \"npm run dev -w @inventory/orders-service\" \"npm run dev -w @inventory/products-service\" \"npm run dev -w @inventory/realtime-service\"",
     "build": "npm run build --workspaces --if-present",
@@ -26,6 +29,7 @@
     "prisma": "^7.0.0",
     "supertest": "^7.1.0",
     "tsx": "^4.19.3",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vitest": "^3.1.3"

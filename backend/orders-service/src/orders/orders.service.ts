@@ -1,14 +1,17 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientKafka } from "@nestjs/microservices";
-import { Prisma } from "../generated/prisma/client";
-import { OrdersPrismaService } from "../database/prisma.service";
-import { CreateOrderDto } from "./dto/create-order.dto";
+import { OrdersPrismaService } from "database/prisma.service";
+import { Prisma } from "generated/prisma/client";
+import { CreateOrderDto } from "orders/dto/create-order.dto";
 
 type OrderRecord = Prisma.OrderGetPayload<Record<string, never>>;
 
 @Injectable()
 export class OrdersService {
-  constructor(private readonly prisma: OrdersPrismaService, @Inject("EVENTS") private readonly events: ClientKafka) {}
+  constructor(
+    private readonly prisma: OrdersPrismaService,
+    @Inject("EVENTS") private readonly events: ClientKafka,
+  ) {}
 
   findAll(): Promise<OrderRecord[]> {
     return this.prisma.order.findMany({ orderBy: { createdAt: "desc" } });
@@ -19,17 +22,17 @@ export class OrdersService {
   }
 
   async create(dto: CreateOrderDto): Promise<OrderRecord> {
-    const order = await this.prisma.order.create({ data: dto });
-    this.events.emit("inventory.order.created", order);
-    return order;
+    return this.prisma.order.create({ data: dto });
   }
 
   async remove(id: number): Promise<OrderRecord | null> {
     const order = await this.findOne(id);
     if (!order) return null;
     await this.prisma.order.delete({ where: { id } });
-    this.events.emit("inventory.order.deleted", { id });
+    this.events.emit("inventory.order.deleted", {
+      id,
+      occurredAt: new Date().toISOString(),
+    });
     return order;
   }
-
 }
