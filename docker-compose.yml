@@ -107,9 +107,6 @@ services:
         condition: service_started
       products-service:
         condition: service_started
-    ports:
-      - "3100:3000"
-
   web:
     image: orders-products-app:local
     build:
