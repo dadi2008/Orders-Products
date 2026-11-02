@@ -1,9 +1,10 @@
 import "reflect-metadata";
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Injectable, Module, Param, Post, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Inject, Injectable, Module, Param, Post, ValidationPipe } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { ClientKafka, ClientsModule, Transport } from "@nestjs/microservices";
 import { NestFactory } from "@nestjs/core";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { IsNotEmpty, IsOptional, IsString, MaxLength } from "class-validator";
 
 class CreateOrderDto {
@@ -19,11 +20,15 @@ class CreateOrderDto {
 }
 
 @Injectable()
-class PrismaService extends PrismaClient {}
+class PrismaService extends PrismaClient {
+  constructor() {
+    super({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? "postgresql://inventory:inventory@localhost:5432/inventory?schema=public" }) });
+  }
+}
 
 @Injectable()
 class OrdersService {
-  constructor(private readonly prisma: PrismaService, private readonly events: ClientKafka) {}
+  constructor(private readonly prisma: PrismaService, @Inject("EVENTS") private readonly events: ClientKafka) {}
 
   async findAll() {
     const orders = await this.prisma.order.findMany({

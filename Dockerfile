@@ -9,6 +9,8 @@ COPY apps/web/package.json apps/web/package.json
 COPY packages/database/package.json packages/database/package.json
 RUN npm install
 COPY . .
+ARG GATEWAY_URL=http://gateway:3000
+ENV GATEWAY_URL=$GATEWAY_URL
 RUN npm run db:generate && npm run build
 
 FROM base AS gateway

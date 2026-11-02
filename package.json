@@ -4,7 +4,7 @@
   "private": true,
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "concurrently -n web,gateway,orders,products,realtime -c cyan,green,yellow,magenta,blue \"npm run dev -w @inventory/web\" \"npm run dev -w @inventory/gateway\" \"npm run dev -w @inventory/orders-service\" \"npm run dev -w @inventory/products-service\" \"npm run dev -w @inventory/realtime-service\"",
+    "dev": "concurrently -n web,gateway,orders,products,realtime -c cyan,green,yellow,magenta,blue \"npm run dev -w @inventory/web\" \"PORT=3100 npm run dev -w @inventory/gateway\" \"npm run dev -w @inventory/orders-service\" \"npm run dev -w @inventory/products-service\" \"npm run dev -w @inventory/realtime-service\"",
     "build": "npm run build --workspaces --if-present",
     "test": "vitest run",
     "test:watch": "vitest",

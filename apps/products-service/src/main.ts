@@ -2,9 +2,14 @@ import "reflect-metadata";
 import { Controller, Get, Injectable, Module, Param, Query } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
 @Injectable()
-class PrismaService extends PrismaClient {}
+class PrismaService extends PrismaClient {
+  constructor() {
+    super({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? "postgresql://inventory:inventory@localhost:5432/inventory?schema=public" }) });
+  }
+}
 
 @Injectable()
 class ProductsService {

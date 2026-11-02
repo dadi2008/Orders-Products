@@ -17,7 +17,7 @@ The frontend is split by business domains into Orders and Products feature appli
 | Service | Responsibility | Port |
 | --- | --- | --- |
 | `web` | Next.js shell and domain UI modules | 3005 |
-| `gateway` | Single REST entry point and service routing | 3000 |
+| `gateway` | Single REST entry point and service routing | 3100 |
 | `orders-service` | Order commands, order aggregation and Kafka events | internal 3001 |
 | `products-service` | Product queries and type filtering | internal 3002 |
 | `realtime-service` | Socket.IO presence with Redis adapter | 3003 |
@@ -63,7 +63,7 @@ npm run db:seed
 npm run dev
 ```
 
-The Next.js app is available at `http://localhost:3000` during local development. The gateway also uses port 3000 in the Docker deployment, therefore use Docker Compose for the complete environment.
+The Next.js app is available at `http://localhost:3000` during local development and the gateway at `http://localhost:3100`. Docker exposes the web application on port 3005 and proxies `/api` to the internal gateway.
 
 ## Quality checks
 

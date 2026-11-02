@@ -108,7 +108,7 @@ services:
       products-service:
         condition: service_started
     ports:
-      - "3000:3000"
+      - "3100:3000"
 
   web:
     image: orders-products-app:local
@@ -117,7 +117,6 @@ services:
       target: base
     command: npm run start -w @inventory/web
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:3000/api
       NEXT_PUBLIC_SOCKET_URL: http://localhost:3003
     depends_on:
       gateway:
