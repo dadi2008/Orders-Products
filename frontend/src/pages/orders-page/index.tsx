@@ -157,7 +157,7 @@ export default function OrdersPage() {
       )}
       {deleting && (
         <ConfirmModal
-          confirmationTitle="Вы уверены, что хотите удалить этот приход?"
+          confirmationTitle={t("confirmDeleteArrival")}
           itemTitle={deleting.products[0]?.title ?? deleting.title}
           itemSubtitle={deleting.products[0]?.serialNumber ?? t("emptyArrival")}
           busy={busy}

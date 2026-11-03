@@ -2,6 +2,7 @@ import { Trash3, X } from "react-bootstrap-icons";
 import type { ConfirmModalProps } from "common/interfaces/components";
 import { ModalPortal } from "components/modal-portal";
 import { ProductImage } from "components/product-image";
+import { useTranslation } from "common/i18n";
 
 export function ConfirmModal({
   confirmationTitle,
@@ -11,6 +12,8 @@ export function ConfirmModal({
   onClose,
   onConfirm,
 }: ConfirmModalProps) {
+  const { t } = useTranslation();
+
   return (
     <ModalPortal>
       <div className="modal-overlay" role="presentation">
@@ -23,7 +26,7 @@ export function ConfirmModal({
           <button
             className="confirm-modal__close"
             onClick={onClose}
-            aria-label="Закрыть"
+            aria-label={t("close")}
           >
             <X />
           </button>
@@ -44,7 +47,7 @@ export function ConfirmModal({
               onClick={onClose}
               disabled={busy}
             >
-              Отменить
+              {t("cancel")}
             </button>
             <button
               className="button button--danger"
@@ -52,7 +55,7 @@ export function ConfirmModal({
               disabled={busy}
             >
               <Trash3 size={14} />
-              {busy ? "Удаление..." : "Удалить"}
+              {busy ? t("deleting") : t("delete")}
             </button>
           </footer>
         </section>
