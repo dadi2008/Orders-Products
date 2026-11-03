@@ -31,7 +31,7 @@ export function OrderDetails({
           order.products.map((product) => (
             <div className="order-product" key={product.id}>
               <i />
-              <ProductImage small />
+              <ProductImage small src={product.photoUrl} />
               <div>
                 <strong>{product.title}</strong>
                 <span>{product.serialNumber}</span>
