@@ -3,7 +3,7 @@ import {
   PrismaClient,
   ProductCondition,
   ProductStatus,
-} from "generated/prisma/client";
+} from "../src/generated/prisma/client";
 
 const connectionString = process.env.PRODUCTS_DATABASE_URL;
 if (!connectionString) throw new Error("PRODUCTS_DATABASE_URL is required");
@@ -13,9 +13,8 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  await prisma.price.deleteMany();
-  await prisma.product.deleteMany();
-  await Promise.all(
+  await prisma.$executeRaw`TRUNCATE TABLE "Price", "Product", "OutboxEvent" RESTART IDENTITY CASCADE`;
+  const products = await Promise.all(
     [1, 2, 3, 4, 5, 6].map((index) =>
       prisma.product.create({
         data: {
@@ -35,10 +34,10 @@ async function main() {
           receivedAt: new Date(`2025-0${(index % 4) + 1}-06T12:09:33.000Z`),
           orderId: ((index - 1) % 4) + 1,
           orderTitle: [
-            "Office equipment delivery",
-            "Monitors for design team",
-            "Hardware replenishment",
-            "Workstation upgrade",
+            "Длинное предлинное длиннючее название прихода",
+            "Длинное название прихода",
+            "Длинное предлинное длиннючее название прихода",
+            "Длинное предлинное название прихода",
           ][(index - 1) % 4],
           prices: {
             create: [
@@ -50,6 +49,12 @@ async function main() {
       }),
     ),
   );
+  console.log(`Seeded ${String(products.length)} default products`);
 }
 
-void main().finally(() => prisma.$disconnect());
+void main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(() => prisma.$disconnect());

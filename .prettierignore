@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.next/
+.vite/
+coverage/
+frontend/public/
+backend/*/src/generated/

@@ -48,3 +48,19 @@ model Price {
 
   @@unique([productId, currency])
 }
+
+model OutboxEvent {
+  id             String    @id @default(uuid())
+  topic          String
+  key            String
+  payload        Json
+  attempts       Int       @default(0)
+  availableAt    DateTime  @default(now())
+  lockedUntil    DateTime?
+  publishedAt    DateTime?
+  deadLetteredAt DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+
+  @@index([publishedAt, deadLetteredAt, availableAt, lockedUntil])
+}

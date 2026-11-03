@@ -1,5 +1,9 @@
 node_modules
-.next
+.vite
+.vscode/
+.idea/
+playwright-report/
+test-results/
 dist
 coverage
 .env

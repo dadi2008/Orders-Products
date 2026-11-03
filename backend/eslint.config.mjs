@@ -6,6 +6,11 @@ import { join } from "node:path";
 import tseslint from "typescript-eslint";
 
 const sourcePattern = join(import.meta.dirname, "*/src/**/*.ts");
+const disabledNestTestRules = Object.fromEntries(
+  [...nestjs.configs.flatRecommended, ...nestjs.configs.flatNoSwagger]
+    .flatMap((config) => Object.keys(config.rules ?? {}))
+    .map((rule) => [rule, "off"]),
+);
 
 export default tseslint.config(
   globalIgnores(["**/dist/**", "**/node_modules/**", "**/src/generated/**"]),
@@ -40,5 +45,16 @@ export default tseslint.config(
         },
       ],
     },
+  },
+  {
+    files: ["**/test/**/*.test.ts"],
+    extends: [tseslint.configs.disableTypeChecked],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: disabledNestTestRules,
   },
 );

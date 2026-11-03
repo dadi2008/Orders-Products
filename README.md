@@ -4,7 +4,7 @@ Inventory management application built from the provided test specification. It 
 
 ## Technology
 
-- Next.js, React, TypeScript, Redux Toolkit, Bootstrap and PWA manifest
+- React, Vite, TypeScript, React Router, Redux Toolkit, Bootstrap and PWA manifest
 - NestJS API Gateway, Orders, Products and Realtime services
 - PostgreSQL with Prisma ORM 7
 - Kafka domain events and Redis-backed Socket.IO presence
@@ -16,8 +16,8 @@ The frontend is split by business domains into Orders and Products feature appli
 
 | Service             | Responsibility                                                       | Port                               |
 | ------------------- | -------------------------------------------------------------------- | ---------------------------------- |
-| `web`               | Next.js shell and domain UI modules                                  | 3005                               |
-| `gateway`           | Single REST entry point and service routing                          | internal 3000, proxied through web |
+| `web`               | React SPA and domain UI modules                                      | 3005                               |
+| `gateway`           | GraphQL entry point and service routing                              | internal 3000, proxied through web |
 | `orders-service`    | Order commands, order aggregation and Kafka events                   | internal 3001                      |
 | `products-service`  | Product queries, type filtering and order-deletion event consumption | internal 3002                      |
 | `realtime-service`  | Socket.IO presence with Redis adapter                                | 3003                               |
@@ -68,7 +68,7 @@ npm run db:seed
 npm run dev
 ```
 
-The Next.js app is available at `http://localhost:3000` during local development and the gateway at `http://localhost:3100`. Docker exposes the web application on port 3005 and proxies `/api` to the internal gateway.
+The Vite development server is available at `http://localhost:3000` and the gateway at `http://localhost:3100`. Docker exposes the React SPA on port 3005 and Nginx proxies `/graphql` to the internal gateway.
 
 ## Quality checks
 
@@ -76,9 +76,15 @@ The Next.js app is available at `http://localhost:3000` during local development
 npm run lint
 npm run test
 npm run build
+npm run test:e2e
+npm run test:e2e:system
 ```
 
-The frontend uses Next.js Core Web Vitals linting. Backend services use the typed NestJS ESLint recommended rules with Swagger rules disabled because this API does not expose an OpenAPI contract.
+`test:e2e` builds the React application and executes browser scenarios with controlled GraphQL responses. These tests cover order creation and deletion, product deletion, title search, type filtering and modal-overlay layout.
+
+`test:e2e:system` creates a separate Docker Compose project with randomly generated database passwords, starts the full stack, executes GraphQL system scenarios without mocks and removes only that project's containers and volumes afterwards. It verifies order and product mutations and the Kafka-driven removal of products after deleting an order.
+
+The frontend uses ESLint with TypeScript, React Hooks and React Refresh rules. Backend services use the typed NestJS ESLint recommended rules with Swagger rules disabled because this API does not expose an OpenAPI contract.
 
 Each backend service is organized by feature: its module, controller, service and DTOs reside together under `src/<feature>/`, while one-time database and transport setup resides in `src/database/` or `src/infrastructure/`.
 
@@ -88,13 +94,6 @@ Prisma schemas: `backend/orders-service/prisma/schema.prisma` and `backend/produ
 
 SQL sources compatible with database modelling tools: `database-schema/orders.sql` and `database-schema/products.sql`.
 
-## REST API
+## GraphQL API
 
-| Method   | Route                 | Description                                          |
-| -------- | --------------------- | ---------------------------------------------------- |
-| `GET`    | `/api/health`         | Gateway health status                                |
-| `GET`    | `/api/orders`         | Orders with product count and totals                 |
-| `POST`   | `/api/orders`         | Create order with `title` and optional `description` |
-| `DELETE` | `/api/orders/:id`     | Delete order and attached products                   |
-| `GET`    | `/api/products`       | Products; optional `type` query filter               |
-| `GET`    | `/api/products/types` | Available product types                              |
+Gateway exposes GraphQL at `/graphql`. The React client uses this endpoint for all inventory operations. Available operations are `orders`, `order`, `products`, `productTypes`, `createOrder`, `deleteOrder` and `deleteProduct`. `GET /api/health` remains available for health checks.

@@ -16,3 +16,30 @@ model Order {
 
   @@index([createdAt])
 }
+
+model OutboxEvent {
+  id             String    @id @default(uuid())
+  topic          String
+  key            String
+  payload        Json
+  attempts       Int       @default(0)
+  availableAt    DateTime  @default(now())
+  lockedUntil    DateTime?
+  publishedAt    DateTime?
+  deadLetteredAt DateTime?
+  lastError      String?
+  createdAt      DateTime  @default(now())
+
+  @@index([publishedAt, deadLetteredAt, availableAt, lockedUntil])
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}

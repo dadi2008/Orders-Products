@@ -4,7 +4,10 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
 import { DatabaseModule } from "database/database.module";
 import { getKafkaBrokers } from "helpers/kafka";
 import { OrdersController } from "orders/orders.controller";
+import { OrdersOutboxPublisher } from "orders/outbox/orders-outbox.publisher";
 import { OrdersService } from "orders/orders.service";
+import { UsersController } from "users/users.controller";
+import { UsersService } from "users/users.service";
 
 @Module({
   imports: [
@@ -27,7 +30,7 @@ import { OrdersService } from "orders/orders.service";
       },
     ]),
   ],
-  controllers: [OrdersController],
-  providers: [OrdersService],
+  controllers: [OrdersController, UsersController],
+  providers: [OrdersService, OrdersOutboxPublisher, UsersService],
 })
 export class OrdersModule {}

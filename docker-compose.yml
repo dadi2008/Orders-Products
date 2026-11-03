@@ -49,6 +49,28 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  kafka-init:
+    image: apache/kafka:3.9.1
+    command:
+      - sh
+      - -ec
+      - |
+        for topic in inventory.order.deleted inventory.order.deleted.dlq inventory.product.deleted inventory.product.deleted.dlq; do
+          /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic "$${topic}" --partitions 1 --replication-factor 1
+        done
+    depends_on:
+      kafka:
+        condition: service_healthy
 
   migrate:
     image: orders-products-app:local
@@ -78,8 +100,17 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      kafka:
-        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e ''fetch("http://127.0.0.1:3001/orders").then(({ ok }) => process.exit(ok ? 0 : 1)).catch(() => process.exit(1))''',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   products-service:
     image: orders-products-app:local
@@ -94,8 +125,17 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
-      kafka:
-        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e ''fetch("http://127.0.0.1:3002/products").then(({ ok }) => process.exit(ok ? 0 : 1)).catch(() => process.exit(1))''',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
 
   realtime-service:
     image: orders-products-app:local
@@ -122,26 +162,38 @@ services:
       PORT: 3000
       ORDERS_SERVICE_URL: http://orders-service:3001
       PRODUCTS_SERVICE_URL: http://products-service:3002
+      REDIS_URL: redis://redis:6379
+      MEDIA_DIR: /app/media
+    volumes:
+      - ./media:/app/media
     depends_on:
       orders-service:
-        condition: service_started
+        condition: service_healthy
       products-service:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e ''fetch("http://127.0.0.1:3000/api/health").then(({ ok }) => process.exit(ok ? 0 : 1)).catch(() => process.exit(1))''',
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
   web:
-    image: orders-products-app:local
+    image: orders-products-web:local
     build:
       context: .
-      target: base
-    command: npm run start -w @inventory/web
-    environment:
-      NEXT_PUBLIC_SOCKET_URL: http://localhost:3003
+      target: web
     depends_on:
       gateway:
-        condition: service_started
+        condition: service_healthy
       realtime-service:
         condition: service_started
+    volumes:
+      - ./media:/usr/share/nginx/html/media:ro
     ports:
-      - "3005:3000"
+      - "${WEB_PORT:-3005}:3000"
 
 volumes:
   orders_postgres_data:
