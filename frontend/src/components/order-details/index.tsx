@@ -2,26 +2,29 @@ import { PlusLg, Trash3, X } from "react-bootstrap-icons";
 import { productStatusLabels } from "common/constants/products";
 import type { OrderDetailsProps } from "common/interfaces/components";
 import { ProductImage } from "components/product-image";
+import { useTranslation } from "common/i18n";
 
 export function OrderDetails({
   order,
   onClose,
+  onAddProduct,
   onDelete,
   onDeleteProduct,
 }: OrderDetailsProps) {
+  const { t } = useTranslation();
   return (
     <aside className="order-details">
       <button
         className="order-details__close"
         onClick={onClose}
-        aria-label="Закрыть детали"
+        aria-label={t("close")}
       >
         <X />
       </button>
       <h2>{order.title}</h2>
-      <button className="order-details__add">
+      <button className="order-details__add" onClick={onAddProduct}>
         <PlusLg />
-        Добавить продукт
+        {t("addProduct")}
       </button>
       <div className="order-details__products">
         {order.products.length ? (
@@ -37,7 +40,7 @@ export function OrderDetails({
               <button
                 className="icon-button"
                 onClick={() => onDeleteProduct(product)}
-                aria-label="Удалить продукт"
+                aria-label={t("deleteProduct")}
               >
                 <Trash3 />
               </button>
@@ -45,13 +48,13 @@ export function OrderDetails({
           ))
         ) : (
           <p className="order-details__empty">
-            В этом приходе еще нет продуктов.
+            {t("noProductsInArrival")}
           </p>
         )}
       </div>
       <button className="order-details__delete" onClick={onDelete}>
         <Trash3 />
-        Удалить приход
+        {t("deleteArrival")}
       </button>
     </aside>
   );

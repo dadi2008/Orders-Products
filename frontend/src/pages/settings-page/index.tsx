@@ -3,8 +3,14 @@ import { useAppDispatch, useAppSelector } from "hooks/use-app-store";
 import { toMediaUpload } from "lib/media";
 import { inventoryApi } from "lib/api";
 import { setCurrentUser } from "store/slices/ui.slice";
+import { useTranslation } from "common/i18n";
+import { useAuth } from "common/auth";
+import { useNavigate } from "react-router-dom";
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const current = useAppSelector((state) => state.ui.currentUser);
   const [name, setName] = useState(current?.name ?? "");
@@ -35,15 +41,19 @@ export default function SettingsPage() {
       );
     }
   };
+  const logout = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
   return (
     <section className="page settings-page">
       <div className="page__heading">
-        <h1>Настройки</h1>
+        <h1>{t("settings")}</h1>
       </div>
       <form className="settings-form" onSubmit={save}>
         <div className="settings-avatar">
           {current?.avatarUrl ? (
-            <img src={current.avatarUrl} alt="Аватар" />
+            <img src={current.avatarUrl} alt={t("settings")} />
           ) : (
             <span>
               {(name || "АМ")
@@ -55,7 +65,7 @@ export default function SettingsPage() {
           )}
         </div>
         <label>
-          Имя
+          {t("name")}
           <input
             value={name}
             onChange={(event) => setName(event.target.value)}
@@ -64,7 +74,7 @@ export default function SettingsPage() {
           />
         </label>
         <label>
-          Аватар
+          {t("avatar")}
           <input
             type="file"
             accept="image/png,image/jpeg,image/webp"
@@ -72,7 +82,10 @@ export default function SettingsPage() {
           />
         </label>
         {status && <p>{status}</p>}
-        <button className="button button--primary">Сохранить</button>
+        <button className="button button--primary">{t("save")}</button>
+        <button type="button" className="button button--plain" onClick={logout}>
+          {t("signOut")}
+        </button>
       </form>
     </section>
   );

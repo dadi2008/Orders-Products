@@ -109,22 +109,26 @@ describe("order and product cards", () => {
   it("forwards all order-details actions", async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
+    const onAddProduct = vi.fn();
     const onDelete = vi.fn();
     const onDeleteProduct = vi.fn();
     render(
       <OrderDetails
         order={order}
         onClose={onClose}
+        onAddProduct={onAddProduct}
         onDelete={onDelete}
         onDeleteProduct={onDeleteProduct}
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Закрыть детали" }));
+    await user.click(screen.getByRole("button", { name: "Закрыть" }));
+    await user.click(screen.getByRole("button", { name: "Добавить продукт" }));
     await user.click(screen.getByRole("button", { name: "Удалить продукт" }));
     await user.click(screen.getByRole("button", { name: "Удалить приход" }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
+    expect(onAddProduct).toHaveBeenCalledTimes(1);
     expect(onDeleteProduct).toHaveBeenCalledWith(product);
     expect(onDelete).toHaveBeenCalledTimes(1);
   });

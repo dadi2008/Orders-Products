@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import type { User, UsersPage } from "common/types/inventory";
 import { inventoryApi } from "lib/api";
+import { useTranslation } from "common/i18n";
 
 export default function UsersPage() {
+  const { t, locale } = useTranslation();
   const [data, setData] = useState<UsersPage | null>(null);
   const [page, setPage] = useState(1);
   useEffect(() => {
@@ -13,34 +15,34 @@ export default function UsersPage() {
     <section className="page users-page">
       <div className="page__heading">
         <h1>
-          Пользователи <span>/ {data?.total ?? 0}</span>
+          {t("users")} <span>/ {data?.total ?? 0}</span>
         </h1>
       </div>
       {!data ? (
-        <div className="page__state">Загрузка пользователей...</div>
+        <div className="page__state">{t("loadingUsers")}</div>
       ) : (
         <>
           <div className="users-table">
             <div className="users-table__head">
-              <span>Пользователь</span>
-              <span>Email</span>
-              <span>Дата создания</span>
+              <span>{t("users")}</span>
+              <span>{t("email")}</span>
+              <span>{t("date")}</span>
             </div>
             {data.items.map((user: User) => (
               <div className="users-table__row" key={user.id}>
                 <span>{user.name}</span>
                 <span>{user.email}</span>
                 <span>
-                  {new Intl.DateTimeFormat("ru-RU").format(
+                  {new Intl.DateTimeFormat(locale).format(
                     new Date(user.createdAt),
                   )}
                 </span>
               </div>
             ))}
           </div>
-          <nav className="pagination" aria-label="Пагинация">
+          <nav className="pagination" aria-label={t("users")}>
             <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-              Назад
+              {t("back")}
             </button>
             {Array.from({ length: pages }, (_, index) => (
               <button
@@ -52,7 +54,7 @@ export default function UsersPage() {
               </button>
             ))}
             <button disabled={page === pages} onClick={() => setPage(page + 1)}>
-              Вперед
+              {t("next")}
             </button>
           </nav>
         </>

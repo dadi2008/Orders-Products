@@ -35,7 +35,7 @@ Open `http://localhost:3005`. The migration container creates the database schem
 
 Deleting an order is eventually consistent: orders-service persists the deletion and emits `inventory.order.deleted`; products-service consumes that event in the `products-service-orders` group and idempotently removes the associated products.
 
-Set `ORDERS_POSTGRES_PASSWORD` and `PRODUCTS_POSTGRES_PASSWORD` in `.env` before launching Docker Compose. The two PostgreSQL instances are isolated: Orders owns `orders-postgres`, Products owns `products-postgres`.
+Set `ORDERS_POSTGRES_PASSWORD`, `PRODUCTS_POSTGRES_PASSWORD`, `JWT_ACCESS_SECRET`, and `JWT_REFRESH_SECRET` in `.env` before launching Docker Compose. The two PostgreSQL instances are isolated: Orders owns `orders-postgres`, Products owns `products-postgres`.
 
 Stop the stack with:
 
@@ -86,13 +86,17 @@ npm run test:e2e:system
 
 The frontend uses ESLint with TypeScript, React Hooks and React Refresh rules. Backend services use the typed NestJS ESLint recommended rules with Swagger rules disabled because this API does not expose an OpenAPI contract.
 
+## Authentication
+
+The application exposes GraphQL `register`, `login`, `refreshSession`, and `logout` mutations. Inventory operations require an access JWT. Access tokens expire after 15 minutes; refresh tokens expire after 7 days and rotate on every refresh. The default seeded account is `user1@inventory.local` with password `Inventory123!`.
+
 Each backend service is organized by feature: its module, controller, service and DTOs reside together under `src/<feature>/`, while one-time database and transport setup resides in `src/database/` or `src/infrastructure/`.
 
 ## Data model
 
 Prisma schemas: `backend/orders-service/prisma/schema.prisma` and `backend/products-service/prisma/schema.prisma`. Frontend source is in `frontend/`; NestJS services are in `backend/`.
 
-SQL sources compatible with database modelling tools: `database-schema/orders.sql` and `database-schema/products.sql`.
+SQL sources compatible with database modelling tools: `database-schema/orders.sql` and `database-schema/products.sql`. For MySQL Workbench, open `database-schema/orders-products.mysql.sql` and use **Database → Reverse Engineer** to create the EER diagram.
 
 ## GraphQL API
 

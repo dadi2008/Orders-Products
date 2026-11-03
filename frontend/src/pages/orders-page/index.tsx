@@ -1,29 +1,38 @@
 import { useEffect, useMemo, useState } from "react";
 import { PlusLg } from "react-bootstrap-icons";
-import { useNavigate } from "react-router-dom";
 import type { Order } from "common/types/inventory";
 import { ConfirmModal } from "components/confirm-modal";
 import { OrderCard } from "components/order-card";
 import { OrderForm } from "components/order-form";
+import { OrderDetails } from "components/order-details";
+import { ProductForm } from "components/product-form";
 import { useAppDispatch, useAppSelector } from "hooks/use-app-store";
 import { inventoryApi } from "lib/api";
 import { matchesSearch } from "lib/search";
 import { setOrderFormOpen } from "store/slices/ui.slice";
+import { useTranslation } from "common/i18n";
 
 export default function OrdersPage() {
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const isOrderFormOpen = useAppSelector((state) => state.ui.isOrderFormOpen);
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [deleting, setDeleting] = useState<Order | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<
+    Order["products"][number] | null
+  >(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [isProductFormOpen, setProductFormOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const filteredOrders = useMemo(
     () => orders.filter((order) => matchesSearch(searchQuery, [order.title])),
     [orders, searchQuery],
   );
+  const selectedOrder =
+    filteredOrders.find((order) => order.id === selectedOrderId) ?? null;
   useEffect(() => {
     let isActive = true;
 
@@ -68,39 +77,81 @@ export default function OrdersPage() {
     setOrders((items) => [created, ...items]);
   };
 
+  const addProduct = async (
+    data: Parameters<typeof inventoryApi.createProduct>[0],
+  ) => {
+    const product = await inventoryApi.createProduct(data);
+    setOrders((items) =>
+      items.map((order) =>
+        order.id === product.orderId ? withProduct(order, product) : order,
+      ),
+    );
+  };
+
+  const removeProduct = async () => {
+    if (!deletingProduct) return;
+    setBusy(true);
+    try {
+      await inventoryApi.deleteProduct(deletingProduct.id);
+      setOrders((items) =>
+        items.map((order) =>
+          order.id === deletingProduct.orderId
+            ? withoutProduct(order, deletingProduct.id)
+            : order,
+        ),
+      );
+      setDeletingProduct(null);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <section className="page orders-page">
       <div className="page__heading">
         <button
           className="round-button"
           onClick={() => dispatch(setOrderFormOpen(true))}
-          aria-label="Добавить приход"
+          aria-label={t("addArrival")}
         >
           <PlusLg />
         </button>
         <h1>
-          Приходы <span>/ {filteredOrders.length}</span>
+          {t("arrivals")} <span>/ {filteredOrders.length}</span>
         </h1>
       </div>
       {loading ? (
-        <div className="page__state">Загрузка приходов...</div>
+        <div className="page__state">{t("loadingOrders")}</div>
       ) : loadError ? (
         <div className="page__state" role="alert">
-          Не удалось загрузить приходы. Обновите страницу.
+          {t("failedLoad")}
         </div>
       ) : (
-        <div className="orders-list">
-          {filteredOrders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              selected={false}
-              onSelect={() => navigate(`/groups?orderId=${String(order.id)}`)}
-              onDelete={() => setDeleting(order)}
+        <div
+          className={`orders-layout ${selectedOrder ? "orders-layout--details" : ""}`}
+        >
+          <div className="orders-list">
+            {filteredOrders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                selected={order.id === selectedOrderId}
+                onSelect={() => setSelectedOrderId(order.id)}
+                onDelete={() => setDeleting(order)}
+              />
+            ))}
+            {!filteredOrders.length && (
+              <div className="page__state">{t("ordersNotFound")}</div>
+            )}
+          </div>
+          {selectedOrder && (
+            <OrderDetails
+              order={selectedOrder}
+              onClose={() => setSelectedOrderId(null)}
+              onAddProduct={() => setProductFormOpen(true)}
+              onDelete={() => setDeleting(selectedOrder)}
+              onDeleteProduct={setDeletingProduct}
             />
-          ))}
-          {!filteredOrders.length && (
-            <div className="page__state">Приходы не найдены.</div>
           )}
         </div>
       )}
@@ -108,7 +159,7 @@ export default function OrdersPage() {
         <ConfirmModal
           confirmationTitle="Вы уверены, что хотите удалить этот приход?"
           itemTitle={deleting.products[0]?.title ?? deleting.title}
-          itemSubtitle={deleting.products[0]?.serialNumber ?? "Пустой приход"}
+          itemSubtitle={deleting.products[0]?.serialNumber ?? t("emptyArrival")}
           busy={busy}
           onClose={() => setDeleting(null)}
           onConfirm={removeOrder}
@@ -120,6 +171,40 @@ export default function OrdersPage() {
           onSubmit={createOrder}
         />
       )}
+      {deletingProduct && (
+        <ConfirmModal
+          confirmationTitle={t("deleteProduct")}
+          itemTitle={deletingProduct.title}
+          itemSubtitle={deletingProduct.serialNumber}
+          busy={busy}
+          onClose={() => setDeletingProduct(null)}
+          onConfirm={removeProduct}
+        />
+      )}
+      {isProductFormOpen && selectedOrder && (
+        <ProductForm
+          order={selectedOrder}
+          onClose={() => setProductFormOpen(false)}
+          onSubmit={addProduct}
+        />
+      )}
     </section>
+  );
+}
+
+function withProduct(order: Order, product: Order["products"][number]): Order {
+  const products = [...order.products, product];
+  return { ...order, products, productCount: products.length, totals: totals(products) };
+}
+
+function withoutProduct(order: Order, productId: number): Order {
+  const products = order.products.filter((product) => product.id !== productId);
+  return { ...order, products, productCount: products.length, totals: totals(products) };
+}
+
+function totals(products: Order["products"]): Record<string, number> {
+  return products.flatMap((product) => product.prices).reduce<Record<string, number>>(
+    (result, price) => ({ ...result, [price.currency]: (result[price.currency] ?? 0) + Number(price.value) }),
+    {},
   );
 }

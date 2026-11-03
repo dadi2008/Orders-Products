@@ -1,6 +1,7 @@
 import { ChevronRight, ListUl, Trash3 } from "react-bootstrap-icons";
 import type { OrderCardProps } from "common/interfaces/components";
 import { formatDate, formatMoney } from "lib/format";
+import { useTranslation } from "common/i18n";
 
 export function OrderCard({
   order,
@@ -8,6 +9,7 @@ export function OrderCard({
   onSelect,
   onDelete,
 }: OrderCardProps) {
+  const { t } = useTranslation();
   return (
     <article
       className={`order-card ${selected ? "order-card--selected" : ""}`}
@@ -21,7 +23,7 @@ export function OrderCard({
           <ListUl />
         </span>
         <strong>{order.productCount}</strong>
-        <small>Продуктов</small>
+        <small>{t("productsCount")}</small>
       </div>
       <div className="order-card__date">
         <small>{formatDate(order.createdAt, false)}</small>
@@ -38,7 +40,7 @@ export function OrderCard({
           event.stopPropagation();
           onDelete();
         }}
-        aria-label={`Удалить ${order.title}`}
+        aria-label={`${t("delete")} ${order.title}`}
       >
         <Trash3 />
       </button>

@@ -8,5 +8,6 @@ import { CacheService } from "inventory/cache.service";
 @Module({
   controllers: [InventoryController],
   providers: [InventoryApiService, InventoryResolver, MediaStorageService, CacheService],
+  exports: [InventoryApiService],
 })
 export class InventoryModule {}

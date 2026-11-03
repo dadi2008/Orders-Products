@@ -2,6 +2,7 @@ import { PlusLg, Trash3, X } from "react-bootstrap-icons";
 import { productStatusLabels } from "common/constants/products";
 import type { GroupDetailsProps } from "common/interfaces/components";
 import { ProductImage } from "components/product-image";
+import { useTranslation } from "common/i18n";
 
 export function GroupDetails({
   order,
@@ -10,19 +11,20 @@ export function GroupDetails({
   onDelete,
   onDeleteProduct,
 }: GroupDetailsProps) {
+  const { t } = useTranslation();
   return (
     <aside className="group-details">
       <button
         className="group-details__close"
         onClick={onClose}
-        aria-label="Закрыть группу"
+        aria-label={t("close")}
       >
         <X />
       </button>
       <h2 title={order.title}>{order.title}</h2>
       <button className="group-details__add" onClick={onAddProduct}>
         <PlusLg />
-        Добавить продукт
+        {t("addProduct")}
       </button>
       <div className="group-details__products">
         {order.products.length ? (
@@ -38,7 +40,7 @@ export function GroupDetails({
               <button
                 className="icon-button"
                 onClick={() => onDeleteProduct(product)}
-                aria-label={`Удалить ${product.title}`}
+                aria-label={`${t("delete")} ${product.title}`}
               >
                 <Trash3 />
               </button>
@@ -46,13 +48,13 @@ export function GroupDetails({
           ))
         ) : (
           <p className="group-details__empty">
-            В этой группе пока нет продуктов.
+            {t("noProductsInGroup")}
           </p>
         )}
       </div>
       <button className="group-details__delete" onClick={onDelete}>
         <Trash3 />
-        Удалить приход
+        {t("deleteArrival")}
       </button>
     </aside>
   );

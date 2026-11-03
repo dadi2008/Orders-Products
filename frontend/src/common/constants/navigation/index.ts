@@ -1,9 +1,10 @@
-import { BoxSeam, Boxes, Gear, People, Receipt } from "react-bootstrap-icons";
+import { BarChartLine, BoxSeam, Boxes, Gear, People, Receipt } from "react-bootstrap-icons";
 
 export const navigationItems = [
-  { href: "/orders", label: "Приходы", icon: Receipt },
-  { href: "/groups", label: "Группы", icon: Boxes },
-  { href: "/products", label: "Продукты", icon: BoxSeam },
-  { href: "/users", label: "Пользователи", icon: People },
-  { href: "/settings", label: "Настройки", icon: Gear },
+  { href: "/orders", labelKey: "arrivals", icon: Receipt },
+  { href: "/groups", labelKey: "groups", icon: Boxes },
+  { href: "/products", labelKey: "products", icon: BoxSeam },
+  { href: "/analytics", labelKey: "analytics", icon: BarChartLine },
+  { href: "/users", labelKey: "users", icon: People },
+  { href: "/settings", labelKey: "settings", icon: Gear },
 ] as const;

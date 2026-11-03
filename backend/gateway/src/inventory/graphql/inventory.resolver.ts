@@ -1,4 +1,6 @@
-import { Args, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import { Args, Context, Int, Mutation, Query, Resolver } from "@nestjs/graphql";
+import { UseGuards } from "@nestjs/common";
+import { GqlJwtAuthGuard } from "auth/gql-jwt-auth.guard";
 import { InventoryApiService } from "inventory/inventory-api.service";
 import { CreateOrderInput } from "inventory/graphql/inputs/create-order.input";
 import { CreateProductInput } from "inventory/graphql/inputs/create-product.input";
@@ -23,6 +25,7 @@ import type {
 } from "inventory/types/inventory.types";
 
 @Resolver()
+@UseGuards(GqlJwtAuthGuard)
 export class InventoryResolver {
   constructor(
     private readonly inventory: InventoryApiService,
@@ -74,9 +77,11 @@ export class InventoryResolver {
   }
 
   @Query(() => UserModel, { nullable: true })
-  async currentUser(): Promise<UserModel | null> {
-    const user = await this.cacheValue("inventory:current-user", () =>
-      this.inventory.currentUser(),
+  async currentUser(
+    @Context() context: { req: { user: InventoryUser } },
+  ): Promise<UserModel | null> {
+    const user = await this.cacheValue(`inventory:current-user:${String(context.req.user.id)}`, () =>
+      this.inventory.findUserById(context.req.user.id),
     );
     return user ? toUserModel(user) : null;
   }
@@ -116,17 +121,18 @@ export class InventoryResolver {
   @Mutation(() => UserModel)
   async updateCurrentUser(
     @Args("input") input: UpdateCurrentUserInput,
+    @Context() context: { req: { user: InventoryUser } },
   ): Promise<UserModel> {
-    const current = input.avatar ? await this.inventory.currentUser() : null;
+    const current = input.avatar ? await this.inventory.findUserById(context.req.user.id) : null;
     const avatarUrl = input.avatar
       ? await this.requireMedia().save(input.avatar, "avatar")
       : undefined;
-    const user = await this.inventory.updateCurrentUser({
+    const user = await this.inventory.updateCurrentUser(context.req.user.id, {
       name: input.name,
       avatarUrl,
     });
     if (avatarUrl && this.media) await this.media.remove(current?.avatarUrl);
-    await this.invalidate("inventory:current-user", "inventory:users:");
+    await this.invalidate("inventory:current-user:", "inventory:users:");
     return toUserModel(user);
   }
 

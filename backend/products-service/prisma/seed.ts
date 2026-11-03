@@ -13,7 +13,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  await prisma.$executeRaw`TRUNCATE TABLE "Price", "Product", "OutboxEvent" RESTART IDENTITY CASCADE`;
+  if ((await prisma.product.count()) > 0) return;
   const products = await Promise.all(
     [1, 2, 3, 4, 5, 6].map((index) =>
       prisma.product.create({

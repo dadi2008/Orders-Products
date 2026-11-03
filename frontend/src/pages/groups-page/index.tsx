@@ -8,8 +8,10 @@ import { ProductForm } from "components/product-form";
 import { useAppSelector } from "hooks/use-app-store";
 import { inventoryApi } from "lib/api";
 import { matchesSearch } from "lib/search";
+import { useTranslation } from "common/i18n";
 
 export default function GroupsPage() {
+  const { t } = useTranslation();
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const [searchParams, setSearchParams] = useSearchParams();
   const [groups, setGroups] = useState<Order[]>([]);
@@ -112,14 +114,14 @@ export default function GroupsPage() {
     <section className="page groups-page">
       <div className="page__heading">
         <h1>
-          Группы <span>/ {filteredGroups.length}</span>
+          {t("groups")} <span>/ {filteredGroups.length}</span>
         </h1>
       </div>
       {loading ? (
-        <div className="page__state">Загрузка групп...</div>
+        <div className="page__state">{t("loadingGroups")}</div>
       ) : loadError ? (
         <div className="page__state" role="alert">
-          Не удалось загрузить группы. Обновите страницу.
+          {t("failedLoad")}
         </div>
       ) : (
         <div
@@ -135,7 +137,7 @@ export default function GroupsPage() {
               />
             ))}
             {!filteredGroups.length && (
-              <div className="page__state">Группы не найдены.</div>
+              <div className="page__state">{t("groupsNotFound")}</div>
             )}
           </div>
           {selectedGroup && (
@@ -156,7 +158,7 @@ export default function GroupsPage() {
         <ConfirmModal
           confirmationTitle="Вы уверены, что хотите удалить этот приход?"
           itemTitle={deleting.products[0]?.title ?? deleting.title}
-          itemSubtitle={deleting.products[0]?.serialNumber ?? "Пустой приход"}
+          itemSubtitle={deleting.products[0]?.serialNumber ?? t("emptyArrival")}
           busy={busy}
           onClose={() => setDeleting(null)}
           onConfirm={removeGroup}
@@ -164,7 +166,7 @@ export default function GroupsPage() {
       )}
       {deletingProduct && (
         <ConfirmModal
-          confirmationTitle="Вы уверены, что хотите удалить этот продукт?"
+          confirmationTitle={t("deleteProduct")}
           itemTitle={deletingProduct.title}
           itemSubtitle={deletingProduct.serialNumber}
           busy={busy}

@@ -24,6 +24,7 @@ export default defineConfig({
       database: `${productsSource}database`,
       generated: `${productsSource}generated`,
       inventory: `${gatewaySource}inventory`,
+      auth: `${gatewaySource}auth`,
       presence: `${realtimeSource}presence`,
       infrastructure: `${realtimeSource}infrastructure`,
     },

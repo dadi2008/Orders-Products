@@ -3,7 +3,26 @@
   "short_name": "Inventory",
   "start_url": "/orders",
   "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "background_color": "#f3f6f7",
   "theme_color": "#8bc53f",
-  "icons": []
+  "icons": [
+    {
+      "src": "/inventory-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Приходы", "url": "/orders" },
+    { "name": "Продукты", "url": "/products" }
+  ]
 }

@@ -12,11 +12,13 @@ import {
   setSearchQuery,
 } from "store/slices/ui.slice";
 import { inventoryApi } from "lib/api";
+import { useTranslation } from "common/i18n";
 
 export function AppShell({ children }: AppShellProps) {
   const dispatch = useAppDispatch();
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const [now, setNow] = useState(new Date());
+  const { language, locale, setLanguage, t } = useTranslation();
 
   useDesktopScale();
 
@@ -53,18 +55,30 @@ export function AppShell({ children }: AppShellProps) {
         <div className="top-menu__search">
           <Search size={15} />
           <input
-            aria-label="Поиск"
-            placeholder="Поиск"
+            aria-label={t("search")}
+            placeholder={t("search")}
             value={searchQuery}
             onChange={(event) => dispatch(setSearchQuery(event.target.value))}
           />
         </div>
+        <label className="top-menu__language">
+          <span className="sr-only">{t("language")}</span>
+          <select
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as typeof language)}
+            aria-label={t("language")}
+          >
+            <option value="ru">RU</option>
+            <option value="uk">UA</option>
+            <option value="en">EN</option>
+          </select>
+        </label>
         <div className="top-menu__time">
           <span>
-            {new Intl.DateTimeFormat("ru-RU", { weekday: "long" }).format(now)}
+            {new Intl.DateTimeFormat(locale, { weekday: "long" }).format(now)}
           </span>
           <strong>
-            {new Intl.DateTimeFormat("ru-RU", {
+            {new Intl.DateTimeFormat(locale, {
               day: "2-digit",
               month: "short",
               year: "numeric",
@@ -72,7 +86,7 @@ export function AppShell({ children }: AppShellProps) {
           </strong>
           <span className="top-menu__presence">
             <Clock size={14} />
-            {new Intl.DateTimeFormat("ru-RU", {
+            {new Intl.DateTimeFormat(locale, {
               hour: "2-digit",
               minute: "2-digit",
             }).format(now)}

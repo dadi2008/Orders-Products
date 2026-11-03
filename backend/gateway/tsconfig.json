@@ -11,6 +11,7 @@
     "baseUrl": "./src",
     "paths": {
       "app.module": ["app.module"],
+      "auth/*": ["auth/*"],
       "inventory/*": ["inventory/*"]
     },
     "outDir": "dist"

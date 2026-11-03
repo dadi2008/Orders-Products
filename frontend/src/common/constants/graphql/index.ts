@@ -153,3 +153,8 @@ export const deleteProductMutation = `
 export const usersQuery = `query Users($page: Int!, $pageSize: Int!) { users(page: $page, pageSize: $pageSize) { items { id name email avatarUrl createdAt } total page pageSize } }`;
 export const currentUserQuery = `query CurrentUser { currentUser { id name email avatarUrl createdAt } }`;
 export const updateCurrentUserMutation = `mutation UpdateCurrentUser($input: UpdateCurrentUserInput!) { updateCurrentUser(input: $input) { id name email avatarUrl createdAt } }`;
+
+export const loginMutation = `mutation Login($input: LoginInput!) { login(input: $input) { accessToken refreshToken user { id name email avatarUrl createdAt } } }`;
+export const registerMutation = `mutation Register($input: RegisterInput!) { register(input: $input) { accessToken refreshToken user { id name email avatarUrl createdAt } } }`;
+export const refreshSessionMutation = `mutation RefreshSession($input: RefreshTokenInput!) { refreshSession(input: $input) { accessToken refreshToken user { id name email avatarUrl createdAt } } }`;
+export const logoutMutation = `mutation Logout { logout }`;

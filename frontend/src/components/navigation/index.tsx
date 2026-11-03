@@ -1,11 +1,13 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { Gear } from "react-bootstrap-icons";
 import { navigationItems } from "common/constants/navigation";
+import { useTranslation } from "common/i18n";
 import { useAppSelector } from "hooks/use-app-store";
 
 export function Navigation() {
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.ui.currentUser);
+  const { t } = useTranslation();
   return (
     <aside className="navigation">
       <div className="navigation__profile">
@@ -20,12 +22,12 @@ export function Navigation() {
               .slice(0, 2) ?? "АМ")
           )}
         </div>
-        <button aria-label="Настройки" onClick={() => navigate("/settings")}>
+        <button aria-label={t("settings")} onClick={() => navigate("/settings")}>
           <Gear size={14} />
         </button>
       </div>
       <nav className="navigation__links">
-        {navigationItems.map(({ href, label, icon: Icon }) => (
+        {navigationItems.map(({ href, labelKey, icon: Icon }) => (
           <NavLink
             key={href}
             to={href}
@@ -34,7 +36,7 @@ export function Navigation() {
             }
           >
             <Icon size={15} />
-            <span>{label}</span>
+            <span>{t(labelKey)}</span>
           </NavLink>
         ))}
       </nav>

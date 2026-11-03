@@ -42,6 +42,7 @@ export interface OrderCardProps {
 export interface OrderDetailsProps {
   order: Order;
   onClose: () => void;
+  onAddProduct: () => void;
   onDelete: () => void;
   onDeleteProduct: (product: Product) => void;
 }

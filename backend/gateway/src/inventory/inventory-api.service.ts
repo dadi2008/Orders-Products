@@ -102,11 +102,45 @@ export class InventoryApiService {
     return this.request<InventoryUser | null>(this.orders, "/users/current");
   }
 
-  updateCurrentUser(data: {
+  findUserById(id: number): Promise<InventoryUser | null> {
+    return this.request<InventoryUser | null>(this.orders, `/users/${String(id)}`);
+  }
+
+  registerUser(data: { name: string; email: string; password: string }): Promise<InventoryUser> {
+    return this.request<InventoryUser>(this.orders, "/users/auth/register", {
+      method: "POST",
+      data,
+    });
+  }
+
+  validateUser(data: { email: string; password: string }): Promise<InventoryUser | null> {
+    return this.request<InventoryUser | null>(this.orders, "/users/auth/validate", {
+      method: "POST",
+      data,
+    });
+  }
+
+  setRefreshTokenHash(id: number, tokenHash: string | null): Promise<InventoryUser> {
+    return this.request<InventoryUser>(
+      this.orders,
+      `/users/auth/${String(id)}/refresh-token`,
+      { method: "PATCH", data: tokenHash ? { tokenHash } : {} },
+    );
+  }
+
+  hasRefreshToken(id: number, tokenHash: string): Promise<boolean> {
+    return this.request<boolean>(
+      this.orders,
+      `/users/auth/${String(id)}/refresh-token/validate`,
+      { method: "POST", data: { tokenHash } },
+    );
+  }
+
+  updateCurrentUser(id: number, data: {
     name: string;
     avatarUrl?: string;
   }): Promise<InventoryUser> {
-    return this.request<InventoryUser>(this.orders, "/users/current", {
+    return this.request<InventoryUser>(this.orders, `/users/${String(id)}`, {
       method: "PATCH",
       data,
     });

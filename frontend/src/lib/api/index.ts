@@ -10,6 +10,10 @@ import {
   productTypesQuery,
   updateCurrentUserMutation,
   usersQuery,
+  loginMutation,
+  logoutMutation,
+  refreshSessionMutation,
+  registerMutation,
 } from "common/constants/graphql";
 import { graphqlUrl } from "common/constants/environment";
 import type { GraphqlOrder } from "common/types/graphql";
@@ -30,16 +34,71 @@ const client = new GraphQLClient(
 );
 const cache = new Map<string, { value: unknown; expiresAt: number }>();
 const pending = new Map<string, Promise<unknown>>();
+const accessTokenKey = "inventory-access-token";
+const refreshTokenKey = "inventory-refresh-token";
+let accessToken = window.localStorage.getItem(accessTokenKey);
+let refreshToken = window.localStorage.getItem(refreshTokenKey);
+let refreshTask: Promise<AuthSession | null> | undefined;
+
+type AuthSession = { accessToken: string; refreshToken: string; user: User };
 
 async function request<T>(
   query: string,
   variables?: Record<string, unknown>,
 ): Promise<T> {
   try {
-    return await client.request<T>(query, variables);
+    return await client.request<T>(query, variables, authorizationHeader());
   } catch (error: unknown) {
+    if (isUnauthorized(error) && (await refreshAccessToken()))
+      return client.request<T>(query, variables, authorizationHeader());
     throw new Error(getErrorMessage(error) ?? "Unable to complete the request");
   }
+}
+
+function authorizationHeader(): Record<string, string> | undefined {
+  return accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined;
+}
+
+function isUnauthorized(error: unknown): boolean {
+  const message = getErrorMessage(error)?.toLowerCase() ?? "";
+  return message.includes("unauthorized") || message.includes("jwt") || message.includes("token");
+}
+
+async function refreshAccessToken(): Promise<AuthSession | null> {
+  if (!refreshToken) return null;
+  if (!refreshTask) {
+    refreshTask = client
+      .request<{ refreshSession: AuthSession }>(refreshSessionMutation, {
+        input: { refreshToken },
+      })
+      .then(({ refreshSession }) => {
+        saveSession(refreshSession);
+        return refreshSession;
+      })
+      .catch(() => {
+        clearSession();
+        return null;
+      })
+      .finally(() => {
+        refreshTask = undefined;
+      });
+  }
+  return refreshTask;
+}
+
+function saveSession(session: AuthSession) {
+  accessToken = session.accessToken;
+  refreshToken = session.refreshToken;
+  window.localStorage.setItem(accessTokenKey, accessToken);
+  window.localStorage.setItem(refreshTokenKey, refreshToken);
+}
+
+function clearSession() {
+  accessToken = null;
+  refreshToken = null;
+  window.localStorage.removeItem(accessTokenKey);
+  window.localStorage.removeItem(refreshTokenKey);
+  invalidateCache();
 }
 
 async function cachedRequest<T>(
@@ -91,6 +150,30 @@ function getErrorMessage(error: unknown): string | undefined {
 }
 
 export const inventoryApi = {
+  async login(email: string, password: string): Promise<AuthSession> {
+    const data = await client.request<{ login: AuthSession }>(loginMutation, {
+      input: { email, password },
+    });
+    saveSession(data.login);
+    return data.login;
+  },
+  async register(name: string, email: string, password: string): Promise<AuthSession> {
+    const data = await client.request<{ register: AuthSession }>(registerMutation, {
+      input: { name, email, password },
+    });
+    saveSession(data.register);
+    return data.register;
+  },
+  restoreSession(): Promise<AuthSession | null> {
+    return refreshAccessToken();
+  },
+  async logout(): Promise<void> {
+    try {
+      if (accessToken) await client.request(logoutMutation, undefined, authorizationHeader());
+    } finally {
+      clearSession();
+    }
+  },
   async getOrders(): Promise<Order[]> {
     const data = await cachedRequest<{ orders: GraphqlOrder[] }>(ordersQuery);
     return data.orders.map(toOrder);

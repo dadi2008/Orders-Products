@@ -8,8 +8,10 @@ import { formatMoney } from "lib/format";
 import { matchesSearch } from "lib/search";
 import { sum } from "lib/wasm";
 import { useAppSelector } from "hooks/use-app-store";
+import { useTranslation } from "common/i18n";
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [type, setType] = useState("");
@@ -95,10 +97,10 @@ export default function ProductsPage() {
     <section className="page products-page">
       <div className="page__heading">
         <h1>
-          Продукты <span>/ {productCount}</span>
+          {t("products")} <span>/ {productCount}</span>
         </h1>
         <label className="filter">
-          Тип:
+          {t("type")}:
           <span>
             <select
               value={type}
@@ -107,7 +109,7 @@ export default function ProductsPage() {
                 setType(event.target.value);
               }}
             >
-              <option value="">Все типы</option>
+              <option value="">{t("allTypes")}</option>
               {types.map((item) => (
                 <option key={item} value={item}>
                   {item}
@@ -118,14 +120,14 @@ export default function ProductsPage() {
           </span>
         </label>
         <div className="products-page__total">
-          Сумма: {formatMoney(total, "USD")}
+          {t("total")}: {formatMoney(total, "USD")}
         </div>
       </div>
       {loading ? (
-        <div className="page__state">Загрузка продуктов...</div>
+        <div className="page__state">{t("loadingProducts")}</div>
       ) : loadError ? (
         <div className="page__state" role="alert">
-          Не удалось загрузить продукты. Обновите страницу.
+          {t("failedLoad")}
         </div>
       ) : (
         <div className="products-table">
@@ -137,13 +139,13 @@ export default function ProductsPage() {
             />
           ))}
           {!filteredProducts.length && (
-            <div className="page__state">Продукты не найдены.</div>
+            <div className="page__state">{t("noProducts")}</div>
           )}
         </div>
       )}
       {deleting && (
         <ConfirmModal
-          confirmationTitle="Вы уверены, что хотите удалить этот продукт?"
+          confirmationTitle={t("deleteProduct")}
           itemTitle={deleting.title}
           itemSubtitle={deleting.serialNumber}
           busy={busy}
