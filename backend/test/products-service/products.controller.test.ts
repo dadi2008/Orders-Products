@@ -16,7 +16,13 @@ describe("ProductsController", () => {
     await expect(controller.types()).resolves.toEqual(["Monitors"]);
     await expect(controller.byOrder("4")).resolves.toEqual([]);
     await expect(
-      controller.create({ orderId: 4, orderTitle: "Приход", title: "Монитор" }),
+      controller.create({
+        orderId: 4,
+        orderTitle: "Приход",
+        title: "Монитор",
+        condition: "NEW",
+        status: "AVAILABLE",
+      }),
     ).resolves.toEqual({ id: 8 });
     await expect(controller.remove("7")).resolves.toEqual({ id: 7 });
 
@@ -26,6 +32,8 @@ describe("ProductsController", () => {
       orderId: 4,
       orderTitle: "Приход",
       title: "Монитор",
+      condition: "NEW",
+      status: "AVAILABLE",
     });
     expect(products.remove).toHaveBeenCalledWith(7);
   });

@@ -51,6 +51,8 @@ export type CreateProductData = {
   title: string;
   serialNumber?: string;
   type?: string;
+  condition: ProductCondition;
+  status: ProductStatus;
   photo?: MediaUpload;
 };
 

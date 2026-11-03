@@ -51,6 +51,8 @@ export class ProductsService {
         type: type.length > 0 ? type : "Мониторы",
         photoUrl: input.photoUrl,
         specification: "",
+        condition: input.condition,
+        status: input.status,
         guaranteeStart: receivedAt,
         guaranteeEnd,
         receivedAt,

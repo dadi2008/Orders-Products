@@ -7,7 +7,7 @@ import { formatMoney } from "lib/format";
 import { inventoryApi } from "lib/api";
 
 export default function AnalyticsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState(false);
   const [bars, setBars] = useState<{ label: string; value: number }[]>([]);
@@ -61,7 +61,7 @@ export default function AnalyticsPage() {
                       }}
                     />
                   </div>
-                  <strong>{formatMoney(bar.value, "USD")}</strong>
+                  <strong>{formatMoney(bar.value, "USD", locale)}</strong>
                 </div>
               ))}
               {!bars.length && <span className="analytics-chart__empty">—</span>}

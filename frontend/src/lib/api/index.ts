@@ -151,14 +151,14 @@ function getErrorMessage(error: unknown): string | undefined {
 
 export const inventoryApi = {
   async login(email: string, password: string): Promise<AuthSession> {
-    const data = await client.request<{ login: AuthSession }>(loginMutation, {
+    const data = await request<{ login: AuthSession }>(loginMutation, {
       input: { email, password },
     });
     saveSession(data.login);
     return data.login;
   },
   async register(name: string, email: string, password: string): Promise<AuthSession> {
-    const data = await client.request<{ register: AuthSession }>(registerMutation, {
+    const data = await request<{ register: AuthSession }>(registerMutation, {
       input: { name, email, password },
     });
     saveSession(data.register);

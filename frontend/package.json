@@ -14,15 +14,18 @@
     "format:check": "prettier --check . --ignore-path ../.prettierignore"
   },
   "dependencies": {
+    "@hookform/resolvers": "^7.0.1",
     "@reduxjs/toolkit": "^2.7.0",
     "bootstrap": "^5.3.5",
     "graphql-request": "^7.4.0",
     "react": "^19.1.0",
     "react-bootstrap-icons": "^1.11.5",
     "react-dom": "^19.1.0",
+    "react-hook-form": "^7.91.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.13.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

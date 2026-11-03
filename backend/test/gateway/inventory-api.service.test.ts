@@ -1,6 +1,10 @@
 import axios from "axios";
 import { describe, expect, it, vi } from "vitest";
 import { InventoryApiService } from "../../gateway/src/inventory/inventory-api.service";
+import {
+  ProductCondition,
+  ProductStatus,
+} from "../../gateway/src/inventory/graphql/models/inventory.model";
 
 describe("InventoryApiService", () => {
   it("enriches orders and calculates currency totals", async () => {
@@ -93,7 +97,12 @@ describe("InventoryApiService", () => {
     );
     await expect(service.deleteOrder(3)).resolves.toBe(true);
     await expect(
-      service.createProduct({ orderId: 3, title: "Монитор" }),
+      service.createProduct({
+        orderId: 3,
+        title: "Монитор",
+        condition: ProductCondition.NEW,
+        status: ProductStatus.AVAILABLE,
+      }),
     ).resolves.toEqual(product);
     await expect(service.findProducts("Monitors")).resolves.toEqual([product]);
     await expect(service.findProductTypes()).resolves.toEqual(["Monitors"]);
@@ -111,7 +120,13 @@ describe("InventoryApiService", () => {
     expect(productClient.request).toHaveBeenCalledWith({
       url: "/products",
       method: "POST",
-      data: { orderId: 3, orderTitle: "Workstation upgrade", title: "Монитор" },
+      data: {
+        orderId: 3,
+        orderTitle: "Workstation upgrade",
+        title: "Монитор",
+        condition: "NEW",
+        status: "AVAILABLE",
+      },
     });
   });
 });

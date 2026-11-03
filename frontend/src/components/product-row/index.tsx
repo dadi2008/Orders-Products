@@ -1,11 +1,16 @@
 import { Trash3 } from "react-bootstrap-icons";
 import { Link } from "react-router-dom";
-import { productStatusLabels } from "common/constants/products";
+import {
+  productConditionLabelKeys,
+  productStatusLabelKeys,
+} from "common/constants/products";
 import type { ProductRowProps } from "common/interfaces/components";
 import { ProductImage } from "components/product-image";
+import { useTranslation } from "common/i18n";
 import { formatDate, formatLongDate, formatMoney } from "lib/format";
 
 export function ProductRow({ product, onDelete }: ProductRowProps) {
+  const { t, locale } = useTranslation();
   return (
     <article className="product-row">
       <i
@@ -19,19 +24,19 @@ export function ProductRow({ product, onDelete }: ProductRowProps) {
       <span
         className={`product-row__availability product-row__availability--${product.status.toLowerCase()}`}
       >
-        {productStatusLabels[product.status]}
+        {t(productStatusLabelKeys[product.status])}
       </span>
       <div className="product-row__guarantee">
-        <small>с {formatDate(product.guaranteeStart)}</small>
-        <strong>по {formatLongDate(product.guaranteeEnd)}</strong>
+        <small>{t("guaranteeFrom")} {formatDate(product.guaranteeStart, true, locale)}</small>
+        <strong>{t("guaranteeUntil")} {formatLongDate(product.guaranteeEnd, locale)}</strong>
       </div>
       <span className="product-row__condition">
-        {product.condition === "NEW" ? "новый" : "б/у"}
+        {t(productConditionLabelKeys[product.condition])}
       </span>
       <div className="product-row__prices">
         {product.prices.map((price) => (
           <span key={price.currency}>
-            {formatMoney(price.value, price.currency)}
+            {formatMoney(price.value, price.currency, locale)}
           </span>
         ))}
       </div>
@@ -42,13 +47,13 @@ export function ProductRow({ product, onDelete }: ProductRowProps) {
         {product.order.title}
       </Link>
       <div className="product-row__date">
-        <small>{formatDate(product.receivedAt, false)}</small>
-        <strong>{formatDate(product.receivedAt)}</strong>
+        <small>{formatDate(product.receivedAt, false, locale)}</small>
+        <strong>{formatDate(product.receivedAt, true, locale)}</strong>
       </div>
       <button
         className="icon-button"
         onClick={onDelete}
-        aria-label={`Удалить ${product.title}`}
+        aria-label={`${t("delete")} ${product.title}`}
       >
         <Trash3 />
       </button>

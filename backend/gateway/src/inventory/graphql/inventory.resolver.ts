@@ -107,6 +107,8 @@ export class InventoryResolver {
       title: input.title,
       serialNumber: input.serialNumber,
       type: input.type,
+      condition: input.condition,
+      status: input.status,
       photoUrl,
     });
     await this.invalidate(

@@ -4,7 +4,7 @@ import { formatDate } from "lib/format";
 import { useTranslation } from "common/i18n";
 
 export function GroupCard({ order, selected, onSelect }: GroupCardProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   return (
     <article
       className={`group-card ${selected ? "group-card--selected" : ""}`}
@@ -21,8 +21,8 @@ export function GroupCard({ order, selected, onSelect }: GroupCardProps) {
         <small>{t("productsCount")}</small>
       </div>
       <div className="group-card__date">
-        <small>{formatDate(order.createdAt, false)}</small>
-        <strong>{formatDate(order.createdAt)}</strong>
+        <small>{formatDate(order.createdAt, false, locale)}</small>
+        <strong>{formatDate(order.createdAt, true, locale)}</strong>
       </div>
       {selected && (
         <span className="group-card__arrow">

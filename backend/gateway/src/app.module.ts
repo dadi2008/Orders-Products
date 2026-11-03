@@ -13,6 +13,14 @@ import { AuthModule } from "auth/auth.module";
       autoSchemaFile: true,
       sortSchema: true,
       context: ({ req }: { req: unknown }) => ({ req }),
+      formatError: (error) => ({
+        message: error.message,
+        locations: error.locations,
+        path: error.path,
+        extensions: {
+          code: error.extensions?.code ?? "INTERNAL_SERVER_ERROR",
+        },
+      }),
     }),
     InventoryModule,
     AuthModule,

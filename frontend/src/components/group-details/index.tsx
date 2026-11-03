@@ -1,5 +1,5 @@
 import { PlusLg, Trash3, X } from "react-bootstrap-icons";
-import { productStatusLabels } from "common/constants/products";
+import { productStatusLabelKeys } from "common/constants/products";
 import type { GroupDetailsProps } from "common/interfaces/components";
 import { ProductImage } from "components/product-image";
 import { useTranslation } from "common/i18n";
@@ -36,7 +36,7 @@ export function GroupDetails({
                 <strong title={product.title}>{product.title}</strong>
                 <span>{product.serialNumber}</span>
               </div>
-              <em>{productStatusLabels[product.status]}</em>
+              <em>{t(productStatusLabelKeys[product.status])}</em>
               <button
                 className="icon-button"
                 onClick={() => onDeleteProduct(product)}

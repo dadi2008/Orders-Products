@@ -11,7 +11,7 @@ import { useAppSelector } from "hooks/use-app-store";
 import { useTranslation } from "common/i18n";
 
 export default function ProductsPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [types, setTypes] = useState<string[]>([]);
   const [type, setType] = useState("");
@@ -120,7 +120,7 @@ export default function ProductsPage() {
           </span>
         </label>
         <div className="products-page__total">
-          {t("total")}: {formatMoney(total, "USD")}
+          {t("total")}: {formatMoney(total, "USD", locale)}
         </div>
       </div>
       {loading ? (

@@ -9,7 +9,7 @@ export function OrderCard({
   onSelect,
   onDelete,
 }: OrderCardProps) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   return (
     <article
       className={`order-card ${selected ? "order-card--selected" : ""}`}
@@ -26,12 +26,12 @@ export function OrderCard({
         <small>{t("productsCount")}</small>
       </div>
       <div className="order-card__date">
-        <small>{formatDate(order.createdAt, false)}</small>
-        <strong>{formatDate(order.createdAt)}</strong>
+        <small>{formatDate(order.createdAt, false, locale)}</small>
+        <strong>{formatDate(order.createdAt, true, locale)}</strong>
       </div>
       <div className="order-card__money">
         {Object.entries(order.totals).map(([currency, value]) => (
-          <span key={currency}>{formatMoney(value, currency)}</span>
+          <span key={currency}>{formatMoney(value, currency, locale)}</span>
         ))}
       </div>
       <button

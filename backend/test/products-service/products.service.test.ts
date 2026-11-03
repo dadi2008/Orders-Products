@@ -93,7 +93,7 @@ describe("ProductsService", () => {
     );
   });
 
-  it("creates a product with default values and an order reference", async () => {
+  it("creates a product with selected status, condition and an order reference", async () => {
     const created = {
       id: 9,
       orderId: 4,
@@ -104,7 +104,13 @@ describe("ProductsService", () => {
     const service = new ProductsService({ product: { create } } as never);
 
     await expect(
-      service.create({ orderId: 4, orderTitle: "Приход", title: "Монитор" }),
+      service.create({
+        orderId: 4,
+        orderTitle: "Приход",
+        title: "Монитор",
+        condition: "NEW",
+        status: "AVAILABLE",
+      }),
     ).resolves.toEqual(
       expect.objectContaining({ order: { id: 4, title: "Приход" } }),
     );
@@ -115,6 +121,8 @@ describe("ProductsService", () => {
           orderTitle: "Приход",
           title: "Монитор",
           type: "Мониторы",
+          condition: "NEW",
+          status: "AVAILABLE",
         }),
         include: { prices: true },
       }),

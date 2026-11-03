@@ -1,19 +1,27 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { Gear } from "react-bootstrap-icons";
+import { BoxArrowRight, Gear } from "react-bootstrap-icons";
 import { navigationItems } from "common/constants/navigation";
 import { useTranslation } from "common/i18n";
 import { useAppSelector } from "hooks/use-app-store";
+import { useAuth } from "common/auth";
 
 export function Navigation() {
   const navigate = useNavigate();
   const user = useAppSelector((state) => state.ui.currentUser);
   const { t } = useTranslation();
+  const { signOut } = useAuth();
+
+  const logout = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
+
   return (
     <aside className="navigation">
       <div className="navigation__profile">
         <div className="navigation__avatar">
           {user?.avatarUrl ? (
-            <img src={user.avatarUrl} alt="Аватар" />
+            <img src={user.avatarUrl} alt={t("avatar")} />
           ) : (
             (user?.name
               .split(" ")
@@ -40,6 +48,14 @@ export function Navigation() {
           </NavLink>
         ))}
       </nav>
+      <button
+        type="button"
+        className="navigation__logout"
+        onClick={() => void logout()}
+      >
+        <BoxArrowRight size={16} />
+        <span>{t("signOut")}</span>
+      </button>
     </aside>
   );
 }

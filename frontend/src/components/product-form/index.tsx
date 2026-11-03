@@ -1,13 +1,22 @@
 import { SubmitEvent, useState } from "react";
 import { X } from "react-bootstrap-icons";
+import {
+  productConditionLabelKeys,
+  productStatusLabelKeys,
+} from "common/constants/products";
 import type { ProductFormProps } from "common/interfaces/components";
+import { useTranslation } from "common/i18n";
+import type { ProductCondition, ProductStatus } from "common/types/inventory";
 import { ModalPortal } from "components/modal-portal";
 import { toMediaUpload } from "lib/media";
 
 export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [type, setType] = useState("Мониторы");
+  const [status, setStatus] = useState<ProductStatus>("AVAILABLE");
+  const [condition, setCondition] = useState<ProductCondition>("NEW");
   const [photo, setPhoto] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -15,7 +24,7 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
   const submit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (title.trim().length < 3) {
-      setError("Название должно содержать не менее 3 символов");
+      setError(t("productTitleMin"));
       return;
     }
     setBusy(true);
@@ -25,11 +34,13 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
         title: title.trim(),
         serialNumber: serialNumber.trim() || undefined,
         type: type.trim() || undefined,
+        condition,
+        status,
         photo: photo ? await toMediaUpload(photo) : undefined,
       });
       onClose();
     } catch {
-      setError("Не удалось добавить продукт. Попробуйте еще раз.");
+      setError(t("failedAddProduct"));
     } finally {
       setBusy(false);
     }
@@ -43,13 +54,13 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
             type="button"
             className="confirm-modal__close"
             onClick={onClose}
-            aria-label="Закрыть"
+            aria-label={t("close")}
           >
             <X />
           </button>
-          <h2>Новый продукт</h2>
+          <h2>{t("newProduct")}</h2>
           <label>
-            Название продукта
+            {t("productTitle")}
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
@@ -58,7 +69,7 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
             />
           </label>
           <label>
-            Серийный номер
+            {t("serialNumber")}
             <input
               value={serialNumber}
               onChange={(event) => setSerialNumber(event.target.value)}
@@ -66,7 +77,7 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
             />
           </label>
           <label>
-            Тип продукта
+            {t("productType")}
             <input
               value={type}
               onChange={(event) => setType(event.target.value)}
@@ -74,7 +85,33 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
             />
           </label>
           <label>
-            Изображение
+            {t("productStatus")}
+            <select
+              value={status}
+              onChange={(event) => setStatus(event.target.value as ProductStatus)}
+            >
+              {(Object.keys(productStatusLabelKeys) as ProductStatus[]).map((value) => (
+                <option key={value} value={value}>
+                  {t(productStatusLabelKeys[value])}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t("productCondition")}
+            <select
+              value={condition}
+              onChange={(event) => setCondition(event.target.value as ProductCondition)}
+            >
+              {(Object.keys(productConditionLabelKeys) as ProductCondition[]).map((value) => (
+                <option key={value} value={value}>
+                  {t(productConditionLabelKeys[value])}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t("image")}
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp"
@@ -88,10 +125,10 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
               className="button button--plain"
               onClick={onClose}
             >
-              Отменить
+              {t("cancel")}
             </button>
             <button className="button button--primary" disabled={busy}>
-              {busy ? "Сохранение..." : "Добавить"}
+              {busy ? t("adding") : t("addProduct")}
             </button>
           </div>
         </form>

@@ -1,6 +1,7 @@
 import { Field, InputType, Int } from "@nestjs/graphql";
 import {
   IsInt,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
@@ -8,6 +9,10 @@ import {
 } from "class-validator";
 import { Type } from "class-transformer";
 import { MediaUploadInput } from "inventory/graphql/inputs/media-upload.input";
+import {
+  ProductCondition,
+  ProductStatus,
+} from "inventory/graphql/models/inventory.model";
 
 @InputType()
 export class CreateProductInput {
@@ -32,6 +37,14 @@ export class CreateProductInput {
   @IsString()
   @MaxLength(80)
   type?: string;
+
+  @Field(() => ProductCondition)
+  @IsEnum(ProductCondition)
+  condition!: ProductCondition;
+
+  @Field(() => ProductStatus)
+  @IsEnum(ProductStatus)
+  status!: ProductStatus;
 
   @Field(() => MediaUploadInput, { nullable: true })
   @IsOptional()

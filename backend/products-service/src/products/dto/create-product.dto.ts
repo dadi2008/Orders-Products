@@ -1,10 +1,15 @@
 import {
   IsInt,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
 } from "class-validator";
+import {
+  ProductCondition,
+  ProductStatus,
+} from "generated/prisma/client";
 
 export class CreateProductDto {
   @IsInt()
@@ -29,6 +34,12 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(80)
   type?: string;
+
+  @IsEnum(ProductCondition)
+  condition!: ProductCondition;
+
+  @IsEnum(ProductStatus)
+  status!: ProductStatus;
 
   @IsOptional()
   @IsString()

@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { InventoryResolver } from "../../gateway/src/inventory/graphql/inventory.resolver";
+import {
+  ProductCondition,
+  ProductStatus,
+} from "../../gateway/src/inventory/graphql/models/inventory.model";
 
 describe("InventoryResolver", () => {
   it("maps the enriched order to the GraphQL contract", async () => {
@@ -76,8 +80,8 @@ describe("InventoryResolver", () => {
         serialNumber: "SN-8",
         title: "Монитор",
         type: "Мониторы",
-        condition: "NEW",
-        status: "AVAILABLE",
+        condition: ProductCondition.NEW,
+        status: ProductStatus.AVAILABLE,
         guaranteeStart: "2025-01-06T12:09:33.000Z",
         guaranteeEnd: "2028-01-06T12:09:33.000Z",
         receivedAt: "2025-01-06T12:09:33.000Z",
@@ -97,7 +101,12 @@ describe("InventoryResolver", () => {
       resolver.createOrder({ title: "Hardware replenishment" }),
     ).resolves.toEqual(expect.objectContaining({ id: 2 }));
     await expect(
-      resolver.createProduct({ orderId: 2, title: "Монитор" }),
+      resolver.createProduct({
+        orderId: 2,
+        title: "Монитор",
+        condition: ProductCondition.NEW,
+        status: ProductStatus.AVAILABLE,
+      }),
     ).resolves.toEqual(expect.objectContaining({ id: 8, title: "Монитор" }));
 
     expect(inventory.findOrder).toHaveBeenCalledWith(2);
@@ -108,6 +117,8 @@ describe("InventoryResolver", () => {
     expect(inventory.createProduct).toHaveBeenCalledWith({
       orderId: 2,
       title: "Монитор",
+      condition: "NEW",
+      status: "AVAILABLE",
     });
   });
 });
