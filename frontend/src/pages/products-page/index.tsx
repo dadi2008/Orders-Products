@@ -9,6 +9,7 @@ import { matchesSearch } from "lib/search";
 import { sum } from "lib/wasm";
 import { useAppSelector } from "hooks/use-app-store";
 import { useTranslation } from "common/i18n";
+import { PageSkeleton } from "components/page-skeleton";
 
 export default function ProductsPage() {
   const { t, locale } = useTranslation();
@@ -124,7 +125,7 @@ export default function ProductsPage() {
         </div>
       </div>
       {loading ? (
-        <div className="page__state">{t("loadingProducts")}</div>
+        <PageSkeleton variant="products" compact />
       ) : loadError ? (
         <div className="page__state" role="alert">
           {t("failedLoad")}

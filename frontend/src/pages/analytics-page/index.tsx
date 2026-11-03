@@ -5,11 +5,13 @@ import type { Product } from "common/types/inventory";
 import { calculateAnalytics } from "lib/analytics-worker";
 import { formatMoney } from "lib/format";
 import { inventoryApi } from "lib/api";
+import { PageSkeleton } from "components/page-skeleton";
 
 export default function AnalyticsPage() {
   const { t, locale } = useTranslation();
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [bars, setBars] = useState<{ label: string; value: number }[]>([]);
 
   useEffect(() => {
@@ -23,7 +25,8 @@ export default function AnalyticsPage() {
           setBars(result);
         }
       })
-      .catch(() => active && setError(true));
+      .catch(() => active && setError(true))
+      .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
@@ -39,7 +42,9 @@ export default function AnalyticsPage() {
       <div className="page__heading">
         <h1>{t("analytics")}</h1>
       </div>
-      {error ? (
+      {loading ? (
+        <PageSkeleton variant="analytics" compact />
+      ) : error ? (
         <div className="page__state" role="alert">
           Unable to load analytics.
         </div>

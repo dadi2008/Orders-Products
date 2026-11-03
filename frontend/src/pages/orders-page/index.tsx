@@ -11,6 +11,7 @@ import { inventoryApi } from "lib/api";
 import { matchesSearch } from "lib/search";
 import { setOrderFormOpen } from "store/slices/ui.slice";
 import { useTranslation } from "common/i18n";
+import { PageSkeleton } from "components/page-skeleton";
 
 export default function OrdersPage() {
   const { t } = useTranslation();
@@ -121,7 +122,7 @@ export default function OrdersPage() {
         </h1>
       </div>
       {loading ? (
-        <div className="page__state">{t("loadingOrders")}</div>
+        <PageSkeleton variant="orders" compact />
       ) : loadError ? (
         <div className="page__state" role="alert">
           {t("failedLoad")}

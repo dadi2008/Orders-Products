@@ -9,6 +9,7 @@ import { useAppSelector } from "hooks/use-app-store";
 import { inventoryApi } from "lib/api";
 import { matchesSearch } from "lib/search";
 import { useTranslation } from "common/i18n";
+import { PageSkeleton } from "components/page-skeleton";
 
 export default function GroupsPage() {
   const { t } = useTranslation();
@@ -118,7 +119,7 @@ export default function GroupsPage() {
         </h1>
       </div>
       {loading ? (
-        <div className="page__state">{t("loadingGroups")}</div>
+        <PageSkeleton variant="groups" compact />
       ) : loadError ? (
         <div className="page__state" role="alert">
           {t("failedLoad")}

@@ -6,6 +6,7 @@ import { setCurrentUser } from "store/slices/ui.slice";
 import { useTranslation } from "common/i18n";
 import { useAuth } from "common/auth";
 import { useNavigate } from "react-router-dom";
+import { PageSkeleton } from "components/page-skeleton";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -16,13 +17,19 @@ export default function SettingsPage() {
   const [name, setName] = useState(current?.name ?? "");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(!current);
   useEffect(() => {
-    if (!current)
-      void inventoryApi.getCurrentUser().then((user) => {
+    if (current) return;
+    void inventoryApi
+      .getCurrentUser()
+      .then((user) => {
         dispatch(setCurrentUser(user));
         setName(user?.name ?? "");
-      });
+      })
+      .catch(() => setStatus("Не вдалося завантажити налаштування"))
+      .finally(() => setLoading(false));
   }, [current, dispatch]);
+  if (loading) return <PageSkeleton variant="settings" />;
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
     try {

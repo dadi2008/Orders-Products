@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { User, UsersPage } from "common/types/inventory";
 import { inventoryApi } from "lib/api";
 import { useTranslation } from "common/i18n";
+import { PageSkeleton } from "components/page-skeleton";
 
 export default function UsersPage() {
   const { t, locale } = useTranslation();
@@ -19,7 +20,7 @@ export default function UsersPage() {
         </h1>
       </div>
       {!data ? (
-        <div className="page__state">{t("loadingUsers")}</div>
+        <PageSkeleton variant="users" compact />
       ) : (
         <>
           <div className="users-table">
