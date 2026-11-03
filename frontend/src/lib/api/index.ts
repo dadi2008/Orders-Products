@@ -150,6 +150,9 @@ function getErrorMessage(error: unknown): string | undefined {
 }
 
 export const inventoryApi = {
+  getAccessToken(): string | null {
+    return accessToken;
+  },
   async login(email: string, password: string): Promise<AuthSession> {
     const data = await request<{ login: AuthSession }>(loginMutation, {
       input: { email, password },

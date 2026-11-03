@@ -5,7 +5,7 @@ import { RedisIoAdapter } from "infrastructure/redis-io.adapter";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({ origin: true });
+  app.enableCors({ origin: process.env.WEB_ORIGIN ?? "http://localhost:3005" });
   const redisAdapter = new RedisIoAdapter(app);
   await redisAdapter.connectToRedis(
     process.env.REDIS_URL ?? "redis://localhost:6379",

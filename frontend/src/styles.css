@@ -120,7 +120,7 @@ button {
 .top-menu__time {
   margin-left: 16px;
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto auto auto;
   grid-template-rows: 11px 11px;
   align-content: center;
   align-items: start;
@@ -144,6 +144,7 @@ button {
   grid-row: 1;
   line-height: 11px;
 }
+.top-menu__clock,
 .top-menu__presence {
   grid-column: 2;
   grid-row: 2;
@@ -157,13 +158,17 @@ button {
   font-size: 10px;
   font-weight: 500;
 }
+.top-menu__presence {
+  grid-column: 3;
+}
+.top-menu__clock svg,
 .top-menu__presence svg {
   flex: 0 0 9px;
   width: 9px;
   height: 9px;
   color: var(--green);
 }
-.top-menu__presence span {
+.top-menu__presence b {
   display: grid;
   place-items: center;
   width: 17px;

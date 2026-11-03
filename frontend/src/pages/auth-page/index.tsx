@@ -25,11 +25,13 @@ export default function AuthPage() {
   const schema = useMemo(
     () =>
       yup.object({
-        name: yup.string().trim().min(2, t("nameRequired")).required(t("nameRequired")),
+        name: registration
+          ? yup.string().trim().min(2, t("nameRequired")).required(t("nameRequired"))
+          : yup.string().defined(),
         email: yup.string().trim().email(t("emailRequired")).required(t("emailRequired")),
         password: yup.string().min(8, t("passwordRequired")).required(t("passwordRequired")),
       }),
-    [t],
+    [registration, t],
   );
   const {
     register,
