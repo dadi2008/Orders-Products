@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAppDispatch, useAppSelector } from "hooks/use-app-store";
 import { toMediaUpload } from "lib/media";
 import { inventoryApi } from "lib/api";
 import { setCurrentUser } from "store/slices/ui.slice";
 import { useTranslation } from "common/i18n";
+import type { TranslationKey } from "common/i18n";
 import { useAuth } from "common/auth";
 import { useNavigate } from "react-router-dom";
 import { PageSkeleton } from "components/page-skeleton";
@@ -16,7 +17,10 @@ export default function SettingsPage() {
   const current = useAppSelector((state) => state.ui.currentUser);
   const [name, setName] = useState(current?.name ?? "");
   const [avatar, setAvatar] = useState<File | null>(null);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<TranslationKey | null>(null);
+  const [saving, setSaving] = useState(false);
+  const saveInProgress = useRef(false);
+  const avatarInput = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(!current);
   useEffect(() => {
     if (current) return;
@@ -26,12 +30,16 @@ export default function SettingsPage() {
         dispatch(setCurrentUser(user));
         setName(user?.name ?? "");
       })
-      .catch(() => setStatus("Не вдалося завантажити налаштування"))
+      .catch(() => setStatus("settingsLoadFailed"))
       .finally(() => setLoading(false));
   }, [current, dispatch]);
   if (loading) return <PageSkeleton variant="settings" />;
   const save = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (saveInProgress.current) return;
+    saveInProgress.current = true;
+    setSaving(true);
+    setStatus(null);
     try {
       const user = await inventoryApi.updateCurrentUser({
         name: name.trim(),
@@ -39,13 +47,13 @@ export default function SettingsPage() {
       });
       dispatch(setCurrentUser(user));
       setAvatar(null);
-      setStatus("Настройки сохранены");
-    } catch (error) {
-      setStatus(
-        error instanceof Error
-          ? error.message
-          : "Не удалось сохранить настройки",
-      );
+      if (avatarInput.current) avatarInput.current.value = "";
+      setStatus("settingsSaved");
+    } catch {
+      setStatus("settingsSaveFailed");
+    } finally {
+      saveInProgress.current = false;
+      setSaving(false);
     }
   };
   const logout = async () => {
@@ -57,7 +65,7 @@ export default function SettingsPage() {
       <div className="page__heading">
         <h1>{t("settings")}</h1>
       </div>
-      <form className="settings-form" onSubmit={save}>
+      <form className="settings-form" onSubmit={save} aria-busy={saving}>
         <div className="settings-avatar">
           {current?.avatarUrl ? (
             <img src={current.avatarUrl} alt={t("settings")} />
@@ -78,19 +86,25 @@ export default function SettingsPage() {
             onChange={(event) => setName(event.target.value)}
             maxLength={80}
             required
+            disabled={saving}
           />
         </label>
         <label>
           {t("avatar")}
           <input
             type="file"
+            ref={avatarInput}
+            disabled={saving}
             accept="image/png,image/jpeg,image/webp"
             onChange={(event) => setAvatar(event.target.files?.[0] ?? null)}
           />
         </label>
-        {status && <p>{status}</p>}
-        <button className="button button--primary">{t("save")}</button>
-        <button type="button" className="button button--plain" onClick={logout}>
+        <p role="status" className="settings-form__status">{saving ? t("saving") : status ? t(status) : ""}</p>
+        <button type="submit" className="button button--primary" disabled={saving}>
+          {saving && <span className="button__spinner" aria-hidden="true" />}
+          {saving ? t("saving") : t("save")}
+        </button>
+        <button type="button" className="button button--plain" onClick={logout} disabled={saving}>
           {t("signOut")}
         </button>
       </form>
