@@ -30,6 +30,14 @@ export function App() {
                   </Suspense>
                 }
               />
+              <Route
+                path="/register"
+                element={
+                  <Suspense fallback={<PageSkeleton variant="auth" />}>
+                    <AuthPage />
+                  </Suspense>
+                }
+              />
               <Route path="*" element={<ProtectedApplication />} />
             </Routes>
           </StoreProvider>

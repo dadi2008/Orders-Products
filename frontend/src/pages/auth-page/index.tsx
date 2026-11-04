@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ export default function AuthPage() {
   const { language, setLanguage, t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const [registration, setRegistration] = useState(false);
+  const registration = location.pathname === "/register";
   const [serverError, setServerError] = useState<TranslationKey | null>(null);
 
   const schema = useMemo(
@@ -50,6 +50,12 @@ export default function AuthPage() {
     resolver: yupResolver(schema),
   });
 
+  useEffect(() => {
+    setServerError(null);
+    clearErrors();
+    reset({ name: "", email: "", password: "" });
+  }, [clearErrors, registration, reset]);
+
   if (user) return <Navigate replace to="/orders" />;
   const destination = (location.state as { from?: string } | null)?.from ?? "/orders";
 
@@ -67,10 +73,7 @@ export default function AuthPage() {
   };
 
   const switchMode = () => {
-    setRegistration((value) => !value);
-    setServerError(null);
-    clearErrors();
-    reset({ name: "", email: "", password: "" });
+    navigate(registration ? "/login" : "/register", { state: location.state });
   };
 
   return (
