@@ -39,6 +39,8 @@ Deleting an order is eventually consistent: orders-service persists the deletion
 
 Set `ORDERS_POSTGRES_PASSWORD`, `PRODUCTS_POSTGRES_PASSWORD`, `JWT_ACCESS_SECRET`, and `JWT_REFRESH_SECRET` in `.env` before launching Docker Compose. The two PostgreSQL instances are isolated: Orders owns `orders-postgres`, Products owns `products-postgres`.
 
+Both JWT secrets are mandatory, must be different and must each contain at least 32 characters. Generate each separately with `openssl rand -hex 32`; there are no built-in default signing keys. Restart gateway and realtime after changing them. Existing tokens will no longer be valid, so users must sign in again.
+
 Stop the stack with:
 
 ```bash

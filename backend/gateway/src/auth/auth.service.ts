@@ -5,6 +5,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { InventoryApiService } from "inventory/inventory-api.service";
 import type { InventoryUser } from "inventory/types/inventory.types";
 import type { AuthSession, JwtPayload } from "auth/auth.types";
+import { getJwtSecrets } from "auth/jwt-config";
 
 @Injectable()
 export class AuthService {
@@ -16,8 +17,9 @@ export class AuthService {
     private readonly inventory: InventoryApiService,
     config: ConfigService,
   ) {
-    this.accessSecret = config.get<string>("JWT_ACCESS_SECRET") ?? "development-access-secret-change-me";
-    this.refreshSecret = config.get<string>("JWT_REFRESH_SECRET") ?? "development-refresh-secret-change-me";
+    const secrets = getJwtSecrets(config);
+    this.accessSecret = secrets.accessSecret;
+    this.refreshSecret = secrets.refreshSecret;
   }
 
   async register(input: { name: string; email: string; password: string }) {

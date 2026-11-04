@@ -1,9 +1,21 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { randomBytes } from "node:crypto";
 import { sign } from "jsonwebtoken";
 import { PresenceGateway } from "../../realtime-service/src/presence/presence.gateway";
 
 describe("PresenceGateway", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("rejects missing or short JWT secrets at startup", () => {
+    vi.stubEnv("JWT_ACCESS_SECRET", "");
+    expect(() => new PresenceGateway()).toThrow("JWT_ACCESS_SECRET");
+    vi.stubEnv("JWT_ACCESS_SECRET", "short");
+    expect(() => new PresenceGateway()).toThrow("JWT_ACCESS_SECRET");
+  });
+
   it("joins clients to the presence room and broadcasts the active count", async () => {
+    const accessSecret = randomBytes(32).toString("hex");
+    vi.stubEnv("JWT_ACCESS_SECRET", accessSecret);
     const emit = vi.fn();
     const server = {
       in: vi.fn().mockReturnValue({
@@ -19,7 +31,7 @@ describe("PresenceGateway", () => {
         auth: {
           accessToken: sign(
             { sub: 1, type: "access" },
-            "development-access-secret-change-me",
+            accessSecret,
           ),
           browserSessionId: "11111111-1111-1111-1111-111111111111",
         },
