@@ -3,14 +3,26 @@ import type { User, UsersPage } from "common/types/inventory";
 import { inventoryApi } from "lib/api";
 import { useTranslation } from "common/i18n";
 import { PageSkeleton } from "components/page-skeleton";
+import { useAppSelector } from "hooks/use-app-store";
+import { useDebouncedValue } from "hooks/use-debounced-value";
 
 export default function UsersPage() {
   const { t, locale } = useTranslation();
   const [data, setData] = useState<UsersPage | null>(null);
   const [page, setPage] = useState(1);
+  const searchQuery = useAppSelector((state) => state.ui.searchQuery);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   useEffect(() => {
-    void inventoryApi.getUsers(page).then(setData);
-  }, [page]);
+    let isActive = true;
+    void inventoryApi
+      .getUsers(page, 10, debouncedSearchQuery)
+      .then((result) => {
+        if (isActive) setData(result);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, [debouncedSearchQuery, page]);
   const pages = data ? Math.ceil(data.total / data.pageSize) : 0;
   return (
     <section className="page users-page">

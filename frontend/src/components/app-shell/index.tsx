@@ -9,6 +9,7 @@ import { useAppDispatch } from "hooks/use-app-store";
 import {
   setActiveSessions,
   setCurrentUser,
+  setServerTime,
 } from "store/slices/ui.slice";
 import { inventoryApi } from "lib/api";
 import { getBrowserSessionId } from "lib/browser-session";
@@ -31,6 +32,10 @@ export function AppShell({ children }: AppShellProps) {
     socket.on("presence", ({ activeSessions: count }) =>
       dispatch(setActiveSessions(count)),
     );
+    socket.on("server-time", ({ timestamp }: { timestamp: unknown }) => {
+      if (typeof timestamp === "number" && Number.isFinite(timestamp))
+        dispatch(setServerTime(timestamp));
+    });
     return () => {
       socket.close();
     };

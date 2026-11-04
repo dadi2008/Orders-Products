@@ -6,6 +6,7 @@ import type { User } from "common/types/inventory";
 const initialState: UiState = {
   selectedOrderId: null,
   activeSessions: 0,
+  serverTime: null,
   isOrderFormOpen: false,
   searchQuery: "",
   currentUser: null,
@@ -20,6 +21,9 @@ const uiSlice = createSlice({
     },
     setActiveSessions: (state, action: PayloadAction<number>) => {
       state.activeSessions = action.payload;
+    },
+    setServerTime: (state, action: PayloadAction<number>) => {
+      state.serverTime = action.payload;
     },
     setOrderFormOpen: (state, action: PayloadAction<boolean>) => {
       state.isOrderFormOpen = action.payload;
@@ -36,6 +40,7 @@ const uiSlice = createSlice({
 export const {
   selectOrder,
   setActiveSessions,
+  setServerTime,
   setOrderFormOpen,
   setSearchQuery,
   setCurrentUser,

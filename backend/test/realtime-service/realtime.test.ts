@@ -25,6 +25,7 @@ describe("PresenceGateway", () => {
         },
       },
       data: {},
+      emit: vi.fn(),
       join: vi.fn().mockResolvedValue(undefined),
     };
     const gateway = new PresenceGateway();
@@ -34,6 +35,10 @@ describe("PresenceGateway", () => {
     await gateway.handleDisconnect(client as never);
 
     expect(client.join).toHaveBeenCalledWith("presence");
+    expect(client.emit).toHaveBeenCalledWith(
+      "server-time",
+      expect.objectContaining({ timestamp: expect.any(Number) }),
+    );
     expect(emit).toHaveBeenCalledWith("presence", { activeSessions: 2 });
     expect(emit).toHaveBeenCalledTimes(2);
   });

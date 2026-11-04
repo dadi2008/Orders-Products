@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { inventoryApi } from "lib/api";
 import { formatDate, formatLongDate, formatMoney } from "lib/format";
-import { matchesSearch } from "lib/search";
 import { sum } from "lib/wasm";
 import { order, product } from "./fixtures";
 
@@ -17,19 +16,12 @@ beforeEach(() => {
   requestMock.mockReset();
 });
 
-describe("formatters and search", () => {
+describe("formatters", () => {
   it("formats dates and money for the Russian UI", () => {
     expect(formatDate("2025-01-06T12:09:33.000Z")).toContain("2025");
     expect(formatDate("2025-01-06T12:09:33.000Z", false)).not.toContain("2025");
     expect(formatLongDate("2025-01-06T12:09:33.000Z")).toContain("январ");
     expect(formatMoney(2500.85, "USD")).toContain("2");
-  });
-
-  it("matches only supplied values independently of letter case", () => {
-    expect(matchesSearch("монитор", ["Игровой монитор"])).toBe(true);
-    expect(matchesSearch("ASUS", ["asus rog"])).toBe(true);
-    expect(matchesSearch("inventory", ["Office equipment"])).toBe(false);
-    expect(matchesSearch("   ", [undefined, null])).toBe(true);
   });
 
   it("sums values through the WebAssembly helper", async () => {

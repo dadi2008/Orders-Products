@@ -246,6 +246,9 @@ button {
   border: 1px solid var(--line);
   border-radius: 4px;
 }
+.users-table {
+  min-height: 600px;
+}
 .users-table__head,
 .users-table__row {
   display: grid;
@@ -1469,6 +1472,10 @@ button {
   }
   .orders-layout--details .order-card {
     grid-template-columns: minmax(0, 1fr) 90px;
+  }
+  .orders-layout--details .order-card__title {
+    display: block;
+    grid-column: 1;
   }
   .orders-layout--details .order-card__count {
     display: none;

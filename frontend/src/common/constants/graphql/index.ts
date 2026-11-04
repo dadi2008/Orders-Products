@@ -1,6 +1,6 @@
 export const ordersQuery = `
-  query Orders {
-    orders {
+  query Orders($search: String) {
+    orders(search: $search) {
       id
       title
       description
@@ -38,8 +38,8 @@ export const ordersQuery = `
 `;
 
 export const productsQuery = `
-  query Products($type: String) {
-    products(type: $type) {
+  query Products($type: String, $search: String) {
+    products(type: $type, search: $search) {
       id
       serialNumber
       title
@@ -150,7 +150,7 @@ export const deleteProductMutation = `
   }
 `;
 
-export const usersQuery = `query Users($page: Int!, $pageSize: Int!) { users(page: $page, pageSize: $pageSize) { items { id name email avatarUrl createdAt } total page pageSize } }`;
+export const usersQuery = `query Users($page: Int!, $pageSize: Int!, $search: String) { users(page: $page, pageSize: $pageSize, search: $search) { items { id name email avatarUrl createdAt } total page pageSize } }`;
 export const currentUserQuery = `query CurrentUser { currentUser { id name email avatarUrl createdAt } }`;
 export const updateCurrentUserMutation = `mutation UpdateCurrentUser($input: UpdateCurrentUserInput!) { updateCurrentUser(input: $input) { id name email avatarUrl createdAt } }`;
 

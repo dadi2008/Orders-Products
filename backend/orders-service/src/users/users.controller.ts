@@ -10,10 +10,15 @@ export class UsersController {
   constructor(private readonly users: UsersService) {}
 
   @Get()
-  findPage(@Query("page") page = "1", @Query("pageSize") pageSize = "10") {
+  findPage(
+    @Query("page") page = "1",
+    @Query("pageSize") pageSize = "10",
+    @Query("search") search?: string,
+  ) {
     return this.users.findPage(
       Math.max(1, Number(page)),
       Math.min(50, Math.max(1, Number(pageSize))),
+      search,
     );
   }
 

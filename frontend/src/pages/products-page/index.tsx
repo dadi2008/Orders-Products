@@ -1,13 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown } from "react-bootstrap-icons";
 import type { Product } from "common/types/inventory";
 import { ConfirmModal } from "components/confirm-modal";
 import { ProductRow } from "components/product-row";
 import { inventoryApi } from "lib/api";
 import { formatMoney } from "lib/format";
-import { matchesSearch } from "lib/search";
 import { sum } from "lib/wasm";
 import { useAppSelector } from "hooks/use-app-store";
+import { useDebouncedValue } from "hooks/use-debounced-value";
 import { useTranslation } from "common/i18n";
 import { PageSkeleton } from "components/page-skeleton";
 
@@ -22,6 +22,7 @@ export default function ProductsPage() {
   const [deleting, setDeleting] = useState<Product | null>(null);
   const [busy, setBusy] = useState(false);
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
 
   useEffect(() => {
     inventoryApi
@@ -35,7 +36,10 @@ export default function ProductsPage() {
 
     async function loadProducts() {
       try {
-        const items = await inventoryApi.getProducts(type || undefined);
+        const items = await inventoryApi.getProducts(
+          type || undefined,
+          debouncedSearchQuery,
+        );
         if (isActive) {
           setProducts(items);
           setLoadError(false);
@@ -52,19 +56,13 @@ export default function ProductsPage() {
     return () => {
       isActive = false;
     };
-  }, [type]);
-
-  const filteredProducts = useMemo(
-    () =>
-      products.filter((product) => matchesSearch(searchQuery, [product.title])),
-    [products, searchQuery],
-  );
+  }, [debouncedSearchQuery, type]);
 
   useEffect(() => {
     let isActive = true;
 
     void sum(
-      filteredProducts.flatMap((product) =>
+      products.flatMap((product) =>
         product.prices
           .filter((price) => price.currency === "USD")
           .map((price) => Number(price.value)),
@@ -76,9 +74,9 @@ export default function ProductsPage() {
     return () => {
       isActive = false;
     };
-  }, [filteredProducts]);
+  }, [products]);
 
-  const productCount = filteredProducts.length;
+  const productCount = products.length;
 
   const removeProduct = async () => {
     if (!deleting) return;
@@ -132,14 +130,14 @@ export default function ProductsPage() {
         </div>
       ) : (
         <div className="products-table">
-          {filteredProducts.map((product) => (
+          {products.map((product) => (
             <ProductRow
               key={product.id}
               product={product}
               onDelete={() => setDeleting(product)}
             />
           ))}
-          {!filteredProducts.length && (
+          {!products.length && (
             <div className="page__state">{t("noProducts")}</div>
           )}
         </div>

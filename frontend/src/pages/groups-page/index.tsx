@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { Order } from "common/types/inventory";
 import { ConfirmModal } from "components/confirm-modal";
@@ -7,13 +7,14 @@ import { GroupDetails } from "components/group-details";
 import { ProductForm } from "components/product-form";
 import { useAppSelector } from "hooks/use-app-store";
 import { inventoryApi } from "lib/api";
-import { matchesSearch } from "lib/search";
+import { useDebouncedValue } from "hooks/use-debounced-value";
 import { useTranslation } from "common/i18n";
 import { PageSkeleton } from "components/page-skeleton";
 
 export default function GroupsPage() {
   const { t } = useTranslation();
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [searchParams, setSearchParams] = useSearchParams();
   const [groups, setGroups] = useState<Order[]>([]);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
@@ -31,14 +32,16 @@ export default function GroupsPage() {
 
     async function loadGroups() {
       try {
-        const items = await inventoryApi.getOrders();
+        const items = await inventoryApi.getOrders(debouncedSearchQuery);
         if (isActive) {
           setGroups(items);
           const requestedId = Number(searchParams.get("orderId"));
-          setSelectedGroupId(
-            items.some((item) => item.id === requestedId)
-              ? requestedId
-              : (items[0]?.id ?? null),
+          setSelectedGroupId((currentId) =>
+            items.some((item) => item.id === currentId)
+              ? currentId
+              : items.some((item) => item.id === requestedId)
+                ? requestedId
+                : (items[0]?.id ?? null),
           );
           setLoadError(false);
         }
@@ -54,14 +57,9 @@ export default function GroupsPage() {
     return () => {
       isActive = false;
     };
-  }, [searchParams]);
-
-  const filteredGroups = useMemo(
-    () => groups.filter((group) => matchesSearch(searchQuery, [group.title])),
-    [groups, searchQuery],
-  );
+  }, [debouncedSearchQuery, searchParams]);
   const selectedGroup =
-    filteredGroups.find((group) => group.id === selectedGroupId) ?? null;
+    groups.find((group) => group.id === selectedGroupId) ?? null;
 
   const selectGroup = (id: number) => {
     setSelectedGroupId(id);
@@ -115,7 +113,7 @@ export default function GroupsPage() {
     <section className="page groups-page">
       <div className="page__heading">
         <h1>
-          {t("groups")} <span>/ {filteredGroups.length}</span>
+          {t("groups")} <span>/ {groups.length}</span>
         </h1>
       </div>
       {loading ? (
@@ -129,7 +127,7 @@ export default function GroupsPage() {
           className={`groups-layout ${selectedGroup ? "groups-layout--details" : ""}`}
         >
           <div className="groups-list">
-            {filteredGroups.map((group) => (
+            {groups.map((group) => (
               <GroupCard
                 key={group.id}
                 order={group}
@@ -137,7 +135,7 @@ export default function GroupsPage() {
                 onSelect={() => selectGroup(group.id)}
               />
             ))}
-            {!filteredGroups.length && (
+            {!groups.length && (
               <div className="page__state">{t("groupsNotFound")}</div>
             )}
           </div>

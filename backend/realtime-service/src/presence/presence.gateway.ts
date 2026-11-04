@@ -2,9 +2,11 @@ import {
   ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  OnGatewayInit,
   WebSocketGateway,
   WebSocketServer,
 } from "@nestjs/websockets";
+import type { OnModuleDestroy } from "@nestjs/common";
 import { verify } from "jsonwebtoken";
 import { Server, Socket } from "socket.io";
 
@@ -20,9 +22,20 @@ const browserSessionIdPattern = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i
   cors: { origin: process.env.WEB_ORIGIN ?? "http://localhost:3005" },
 })
 export class PresenceGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
 {
   @WebSocketServer() server!: Server;
+  private clockTimer?: ReturnType<typeof setInterval>;
+
+  afterInit() {
+    this.clockTimer = setInterval(() => {
+      this.publishServerTime();
+    }, 1_000);
+  }
+
+  onModuleDestroy() {
+    if (this.clockTimer) clearInterval(this.clockTimer);
+  }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     const auth = client.handshake.auth as Record<string, unknown>;
@@ -40,6 +53,7 @@ export class PresenceGateway
 
     setBrowserSessionId(client, browserSessionId);
     await client.join("presence");
+    client.emit("server-time", { timestamp: Date.now() });
     await this.publish();
   }
 
@@ -56,6 +70,10 @@ export class PresenceGateway
       return sessions;
     }, new Set()).size;
     this.server.emit("presence", { activeSessions });
+  }
+
+  private publishServerTime() {
+    this.server.local.emit("server-time", { timestamp: Date.now() });
   }
 
   private isValidAccessToken(accessToken: string): boolean {

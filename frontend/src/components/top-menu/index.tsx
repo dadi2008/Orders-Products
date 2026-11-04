@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Clock, People, Search } from "react-bootstrap-icons";
 import { useTranslation } from "common/i18n";
 import { useAppDispatch, useAppSelector } from "hooks/use-app-store";
@@ -8,18 +7,9 @@ export function TopMenu() {
   const dispatch = useAppDispatch();
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
   const activeSessions = useAppSelector((state) => state.ui.activeSessions);
-  const [now, setNow] = useState(() => new Date());
+  const serverTime = useAppSelector((state) => state.ui.serverTime);
+  const now = serverTime === null ? null : new Date(serverTime);
   const { language, locale, setLanguage, t } = useTranslation();
-
-  useEffect(() => {
-    let timer: number;
-    const updateClock = () => {
-      setNow(new Date());
-      timer = window.setTimeout(updateClock, 1_000 - (Date.now() % 1_000));
-    };
-    timer = window.setTimeout(updateClock, 1_000 - (Date.now() % 1_000));
-    return () => window.clearTimeout(timer);
-  }, []);
 
   return (
     <header className="top-menu">
@@ -52,21 +42,27 @@ export function TopMenu() {
       </label>
       <div className="top-menu__time">
         <span>
-          {new Intl.DateTimeFormat(locale, { weekday: "long" }).format(now)}
+          {now
+            ? new Intl.DateTimeFormat(locale, { weekday: "long" }).format(now)
+            : "—"}
         </span>
         <strong>
-          {new Intl.DateTimeFormat(locale, {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          }).format(now)}
+          {now
+            ? new Intl.DateTimeFormat(locale, {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              }).format(now)
+            : "—"}
         </strong>
         <span className="top-menu__clock">
           <Clock size={14} />
-          {new Intl.DateTimeFormat(locale, {
-            hour: "2-digit",
-            minute: "2-digit",
-          }).format(now)}
+          {now
+            ? new Intl.DateTimeFormat(locale, {
+                hour: "2-digit",
+                minute: "2-digit",
+              }).format(now)
+            : "—"}
         </span>
         <span
           className="top-menu__presence"

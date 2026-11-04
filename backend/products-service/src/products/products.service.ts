@@ -1,13 +1,31 @@
 import { Injectable } from "@nestjs/common";
 import { ProductsPrismaService } from "database/prisma.service";
+import type { Prisma } from "generated/prisma/client";
 import { CreateProductDto } from "products/dto/create-product.dto";
 
 @Injectable()
 export class ProductsService {
   constructor(private readonly prisma: ProductsPrismaService) {}
-  async findAll(type?: string) {
+  async findAll(type?: string, search?: string) {
+    const query = normalizeSearch(search);
+    const filters: Prisma.ProductWhereInput[] = [];
+    if (type) filters.push({ type });
+    if (query)
+      filters.push({
+        OR: [
+          { title: { contains: query, mode: "insensitive" } },
+          { serialNumber: { contains: query, mode: "insensitive" } },
+          { orderTitle: { contains: query, mode: "insensitive" } },
+        ],
+      });
+    const where =
+      filters.length === 0
+        ? undefined
+        : filters.length === 1
+          ? filters[0]
+          : { AND: filters };
     const products = await this.prisma.product.findMany({
-      where: type ? { type } : undefined,
+      where,
       include: { prices: true },
       orderBy: { receivedAt: "desc" },
     });
@@ -91,4 +109,9 @@ export class ProductsService {
       return product;
     });
   }
+}
+
+function normalizeSearch(search?: string): string | undefined {
+  const value = search?.trim().slice(0, 100);
+  return value?.length ? value : undefined;
 }

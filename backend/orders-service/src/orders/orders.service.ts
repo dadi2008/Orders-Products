@@ -9,8 +9,14 @@ type OrderRecord = Prisma.OrderGetPayload<Record<string, never>>;
 export class OrdersService {
   constructor(private readonly prisma: OrdersPrismaService) {}
 
-  findAll(): Promise<OrderRecord[]> {
-    return this.prisma.order.findMany({ orderBy: { createdAt: "desc" } });
+  findAll(search?: string): Promise<OrderRecord[]> {
+    const query = normalizeSearch(search);
+    return this.prisma.order.findMany({
+      ...(query
+        ? { where: { title: { contains: query, mode: "insensitive" } } }
+        : {}),
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   findOne(id: number): Promise<OrderRecord | null> {
@@ -38,4 +44,9 @@ export class OrdersService {
       return order;
     });
   }
+}
+
+function normalizeSearch(search?: string): string | undefined {
+  const value = search?.trim().slice(0, 100);
+  return value?.length ? value : undefined;
 }

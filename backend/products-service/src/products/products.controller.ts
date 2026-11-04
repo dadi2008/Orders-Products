@@ -16,8 +16,13 @@ import { ProductsService } from "products/products.service";
 export class ProductsController {
   constructor(private readonly products: ProductsService) {}
 
-  @Get() findAll(@Query("type") type?: string) {
-    return this.products.findAll(type);
+  @Get() findAll(
+    @Query("type") type?: string,
+    @Query("search") search?: string,
+  ) {
+    return search
+      ? this.products.findAll(type, search)
+      : this.products.findAll(type);
   }
   @Get("types") types() {
     return this.products.findTypes();

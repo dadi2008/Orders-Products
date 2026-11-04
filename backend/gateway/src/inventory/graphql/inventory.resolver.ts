@@ -34,9 +34,12 @@ export class InventoryResolver {
   ) {}
 
   @Query(() => [OrderModel])
-  async orders(): Promise<OrderModel[]> {
-    return this.cacheValue("inventory:orders", () =>
-      this.inventory.findOrders(),
+  async orders(
+    @Args("search", { type: () => String, nullable: true }) search?: string,
+  ): Promise<OrderModel[]> {
+    const query = normalizeSearch(search);
+    return this.cacheValue(`inventory:orders:${cachePart(query)}`, () =>
+      query ? this.inventory.findOrders(query) : this.inventory.findOrders(),
     ).then((items) => items.map(toOrderModel));
   }
 
@@ -51,9 +54,15 @@ export class InventoryResolver {
   @Query(() => [ProductModel])
   async products(
     @Args("type", { type: () => String, nullable: true }) type?: string,
+    @Args("search", { type: () => String, nullable: true }) search?: string,
   ): Promise<ProductModel[]> {
-    return this.cacheValue(`inventory:products:${type ?? "all"}`, () =>
-      this.inventory.findProducts(type),
+    const query = normalizeSearch(search);
+    return this.cacheValue(
+      `inventory:products:${cachePart(type)}:${cachePart(query)}`,
+      () =>
+        query
+          ? this.inventory.findProducts(type, query)
+          : this.inventory.findProducts(type),
     ).then((items) => items.map(toProductModel));
   }
 
@@ -68,10 +77,12 @@ export class InventoryResolver {
   async users(
     @Args("page", { type: () => Int, defaultValue: 1 }) page: number,
     @Args("pageSize", { type: () => Int, defaultValue: 10 }) pageSize: number,
+    @Args("search", { type: () => String, nullable: true }) search?: string,
   ): Promise<UsersPageModel> {
+    const query = normalizeSearch(search);
     const result = await this.cacheValue(
-      `inventory:users:${String(page)}:${String(pageSize)}`,
-      () => this.inventory.findUsers(page, pageSize),
+      `inventory:users:${String(page)}:${String(pageSize)}:${cachePart(query)}`,
+      () => this.inventory.findUsers(page, pageSize, query),
     );
     return { ...result, items: result.items.map(toUserModel) };
   }
@@ -181,6 +192,15 @@ export class InventoryResolver {
         prefixes.map((prefix) => cache.invalidatePrefix(prefix)),
       );
   }
+}
+
+function normalizeSearch(search?: string): string | undefined {
+  const value = search?.trim().slice(0, 100);
+  return value?.length ? value : undefined;
+}
+
+function cachePart(value?: string): string {
+  return encodeURIComponent(value ?? "all");
 }
 
 function toOrderModel(order: InventoryOrder): OrderModel {

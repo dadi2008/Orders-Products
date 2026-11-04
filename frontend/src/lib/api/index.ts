@@ -177,13 +177,16 @@ export const inventoryApi = {
       clearSession();
     }
   },
-  async getOrders(): Promise<Order[]> {
-    const data = await cachedRequest<{ orders: GraphqlOrder[] }>(ordersQuery);
+  async getOrders(search?: string): Promise<Order[]> {
+    const data = await cachedRequest<{ orders: GraphqlOrder[] }>(ordersQuery, {
+      search,
+    });
     return data.orders.map(toOrder);
   },
-  async getProducts(type?: string): Promise<Product[]> {
+  async getProducts(type?: string, search?: string): Promise<Product[]> {
     const data = await cachedRequest<{ products: Product[] }>(productsQuery, {
       type,
+      search,
     });
     return data.products;
   },
@@ -213,10 +216,15 @@ export const inventoryApi = {
     invalidateCache();
     return result.createProduct;
   },
-  async getUsers(page: number, pageSize = 10): Promise<UsersPage> {
+  async getUsers(
+    page: number,
+    pageSize = 10,
+    search?: string,
+  ): Promise<UsersPage> {
     const data = await cachedRequest<{ users: UsersPage }>(usersQuery, {
       page,
       pageSize,
+      search,
     });
     return data.users;
   },

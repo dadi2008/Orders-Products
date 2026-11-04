@@ -37,10 +37,11 @@ export class InventoryApiService {
     });
   }
 
-  async findOrders(): Promise<InventoryOrder[]> {
+  async findOrders(search?: string): Promise<InventoryOrder[]> {
     const orders = await this.request<InventoryOrderRecord[]>(
       this.orders,
       "/orders",
+      { params: search ? { search } : undefined },
     );
     return Promise.all(orders.map((order) => this.enrichOrder(order)));
   }
@@ -94,9 +95,13 @@ export class InventoryApiService {
     });
   }
 
-  findUsers(page: number, pageSize: number): Promise<InventoryUsersPage> {
+  findUsers(
+    page: number,
+    pageSize: number,
+    search?: string,
+  ): Promise<InventoryUsersPage> {
     return this.request<InventoryUsersPage>(this.orders, "/users", {
-      params: { page, pageSize },
+      params: { page, pageSize, ...(search ? { search } : {}) },
     });
   }
 
@@ -148,9 +153,12 @@ export class InventoryApiService {
     });
   }
 
-  findProducts(type?: string): Promise<InventoryProduct[]> {
+  findProducts(type?: string, search?: string): Promise<InventoryProduct[]> {
     return this.request<InventoryProduct[]>(this.products, "/products", {
-      params: type ? { type } : undefined,
+      params: {
+        ...(type ? { type } : {}),
+        ...(search ? { search } : {}),
+      },
     });
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { PlusLg } from "react-bootstrap-icons";
 import type { Order } from "common/types/inventory";
 import { ConfirmModal } from "components/confirm-modal";
@@ -8,7 +8,7 @@ import { OrderDetails } from "components/order-details";
 import { ProductForm } from "components/product-form";
 import { useAppDispatch, useAppSelector } from "hooks/use-app-store";
 import { inventoryApi } from "lib/api";
-import { matchesSearch } from "lib/search";
+import { useDebouncedValue } from "hooks/use-debounced-value";
 import { setOrderFormOpen } from "store/slices/ui.slice";
 import { useTranslation } from "common/i18n";
 import { PageSkeleton } from "components/page-skeleton";
@@ -18,6 +18,7 @@ export default function OrdersPage() {
   const dispatch = useAppDispatch();
   const isOrderFormOpen = useAppSelector((state) => state.ui.isOrderFormOpen);
   const searchQuery = useAppSelector((state) => state.ui.searchQuery);
+  const debouncedSearchQuery = useDebouncedValue(searchQuery);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -28,18 +29,14 @@ export default function OrdersPage() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [isProductFormOpen, setProductFormOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const filteredOrders = useMemo(
-    () => orders.filter((order) => matchesSearch(searchQuery, [order.title])),
-    [orders, searchQuery],
-  );
   const selectedOrder =
-    filteredOrders.find((order) => order.id === selectedOrderId) ?? null;
+    orders.find((order) => order.id === selectedOrderId) ?? null;
   useEffect(() => {
     let isActive = true;
 
     async function loadOrders() {
       try {
-        const items = await inventoryApi.getOrders();
+        const items = await inventoryApi.getOrders(debouncedSearchQuery);
         if (isActive) {
           setOrders(items);
           setLoadError(false);
@@ -56,7 +53,7 @@ export default function OrdersPage() {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [debouncedSearchQuery]);
 
   const removeOrder = async () => {
     if (!deleting) return;
@@ -118,7 +115,7 @@ export default function OrdersPage() {
           <PlusLg />
         </button>
         <h1>
-          {t("arrivals")} <span>/ {filteredOrders.length}</span>
+          {t("arrivals")} <span>/ {orders.length}</span>
         </h1>
       </div>
       {loading ? (
@@ -132,7 +129,7 @@ export default function OrdersPage() {
           className={`orders-layout ${selectedOrder ? "orders-layout--details" : ""}`}
         >
           <div className="orders-list">
-            {filteredOrders.map((order) => (
+            {orders.map((order) => (
               <OrderCard
                 key={order.id}
                 order={order}
@@ -141,7 +138,7 @@ export default function OrdersPage() {
                 onDelete={() => setDeleting(order)}
               />
             ))}
-            {!filteredOrders.length && (
+            {!orders.length && (
               <div className="page__state">{t("ordersNotFound")}</div>
             )}
           </div>

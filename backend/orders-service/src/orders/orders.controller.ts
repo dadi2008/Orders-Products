@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
 } from "@nestjs/common";
 import { CreateOrderDto } from "orders/dto/create-order.dto";
 import { OrdersService } from "orders/orders.service";
@@ -14,8 +15,8 @@ import { OrdersService } from "orders/orders.service";
 @Controller("orders")
 export class OrdersController {
   constructor(private readonly orders: OrdersService) {}
-  @Get() findAll() {
-    return this.orders.findAll();
+  @Get() findAll(@Query("search") search?: string) {
+    return search ? this.orders.findAll(search) : this.orders.findAll();
   }
   @Get(":id") findOne(@Param("id") id: string) {
     return this.orders.findOne(Number(id));

@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from "@nestjs/common";
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import { OrdersPrismaService } from "database/prisma.service";
+import type { Prisma } from "generated/prisma/client";
 import { UpdateCurrentUserDto } from "users/dto/update-current-user.dto";
 import { RegisterUserDto } from "users/dto/register-user.dto";
 
@@ -11,15 +12,25 @@ const scrypt = promisify(scryptCallback);
 export class UsersService {
   constructor(private readonly prisma: OrdersPrismaService) {}
 
-  async findPage(page: number, pageSize: number) {
+  async findPage(page: number, pageSize: number, search?: string) {
     const skip = (page - 1) * pageSize;
+    const query = normalizeSearch(search);
+    const where: Prisma.UserWhereInput | undefined = query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { email: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : undefined;
     const [items, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         skip,
         take: pageSize,
         orderBy: { id: "asc" },
+        where,
       }),
-      this.prisma.user.count(),
+      this.prisma.user.count({ where }),
     ]);
     return { items, total, page, pageSize };
   }
@@ -67,6 +78,11 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({ where: { id } });
     return Boolean(user?.refreshTokenHash && safeEqual(user.refreshTokenHash, tokenHash));
   }
+}
+
+function normalizeSearch(search?: string): string | undefined {
+  const value = search?.trim().slice(0, 100);
+  return value?.length ? value : undefined;
 }
 
 export async function hashSecret(value: string): Promise<string> {
