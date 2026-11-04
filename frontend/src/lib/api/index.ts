@@ -41,6 +41,7 @@ const refreshTokenKey = "inventory-refresh-token";
 let accessToken = window.localStorage.getItem(accessTokenKey);
 let refreshToken = window.localStorage.getItem(refreshTokenKey);
 let refreshTask: Promise<AuthSession | null> | undefined;
+const sessionListeners = new Set<(session: AuthSession | null) => void>();
 
 type AuthSession = { accessToken: string; refreshToken: string; user: User };
 
@@ -93,6 +94,7 @@ function saveSession(session: AuthSession) {
   refreshToken = session.refreshToken;
   window.localStorage.setItem(accessTokenKey, accessToken);
   window.localStorage.setItem(refreshTokenKey, refreshToken);
+  notifySessionListeners(session);
 }
 
 function clearSession() {
@@ -101,6 +103,33 @@ function clearSession() {
   window.localStorage.removeItem(accessTokenKey);
   window.localStorage.removeItem(refreshTokenKey);
   invalidateCache();
+  notifySessionListeners(null);
+}
+
+function notifySessionListeners(session: AuthSession | null) {
+  sessionListeners.forEach((listener) => listener(session));
+}
+
+function getTokenExpiry(token: string | null): number | null {
+  if (!token) return null;
+  const [, encodedPayload] = token.split(".");
+  if (!encodedPayload) return null;
+
+  try {
+    const base64 = encodedPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const paddedBase64 = base64.padEnd(
+      base64.length + ((4 - (base64.length % 4)) % 4),
+      "=",
+    );
+    const payload = JSON.parse(
+      window.atob(paddedBase64),
+    ) as { exp?: unknown };
+    return typeof payload.exp === "number" && Number.isFinite(payload.exp)
+      ? payload.exp * 1_000
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 async function cachedRequest<T>(
@@ -154,6 +183,15 @@ function getErrorMessage(error: unknown): string | undefined {
 export const inventoryApi = {
   getAccessToken(): string | null {
     return accessToken;
+  },
+  getAccessTokenExpiry(): number | null {
+    return getTokenExpiry(accessToken);
+  },
+  subscribeToSessionChanges(
+    listener: (session: AuthSession | null) => void,
+  ): () => void {
+    sessionListeners.add(listener);
+    return () => sessionListeners.delete(listener);
   },
   async login(email: string, password: string): Promise<AuthSession> {
     const data = await request<{ login: AuthSession }>(loginMutation, {

@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { App } from "app";
 import { AppShell } from "components/app-shell";
+import { AuthProvider } from "common/auth";
 import { uiReducer } from "store/slices/ui.slice";
 
 const socket = vi.hoisted(() => ({
@@ -21,6 +22,25 @@ vi.mock("socket.io-client", () => ({ io: vi.fn(() => socket) }));
 
 vi.mock("lib/api", () => ({
   inventoryApi: {
+    restoreSession: vi.fn().mockResolvedValue({
+      accessToken: "access-token",
+      refreshToken: "refresh-token",
+      user: {
+        id: 1,
+        name: "Alex",
+        email: "alex@example.com",
+        createdAt: "2026-01-01T00:00:00.000Z",
+      },
+    }),
+    getAccessToken: vi.fn(() => "access-token"),
+    getAccessTokenExpiry: vi.fn(() => null),
+    subscribeToSessionChanges: vi.fn(() => () => undefined),
+    getCurrentUser: vi.fn().mockResolvedValue({
+      id: 1,
+      name: "Alex",
+      email: "alex@example.com",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    }),
     getOrders: vi.fn().mockResolvedValue([]),
     getProducts: vi.fn().mockResolvedValue([]),
     getTypes: vi.fn().mockResolvedValue([]),
@@ -33,11 +53,13 @@ vi.mock("lib/api", () => ({
 function renderShell(children: ReactNode) {
   const store = configureStore({ reducer: { ui: uiReducer } });
   render(
-    <Provider store={store}>
-      <MemoryRouter initialEntries={["/orders"]}>
-        <AppShell>{children}</AppShell>
-      </MemoryRouter>
-    </Provider>,
+    <AuthProvider>
+      <Provider store={store}>
+        <MemoryRouter initialEntries={["/orders"]}>
+          <AppShell>{children}</AppShell>
+        </MemoryRouter>
+      </Provider>
+    </AuthProvider>,
   );
   return store;
 }

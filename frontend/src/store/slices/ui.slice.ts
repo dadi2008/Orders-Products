@@ -22,7 +22,7 @@ const uiSlice = createSlice({
     setActiveSessions: (state, action: PayloadAction<number>) => {
       state.activeSessions = action.payload;
     },
-    setServerTime: (state, action: PayloadAction<number>) => {
+    setServerTime: (state, action: PayloadAction<number | null>) => {
       state.serverTime = action.payload;
     },
     setOrderFormOpen: (state, action: PayloadAction<boolean>) => {

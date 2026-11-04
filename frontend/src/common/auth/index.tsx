@@ -28,6 +28,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  useEffect(
+    () =>
+      inventoryApi.subscribeToSessionChanges((session) => {
+        setUser(session?.user ?? null);
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    if (!user) return undefined;
+
+    const expiresAt = inventoryApi.getAccessTokenExpiry();
+    if (!expiresAt) return undefined;
+
+    // Renew before the 15-minute access token expires, so long-lived websocket
+    // connections always have a valid token available for a reconnect.
+    const delay = Math.max(0, expiresAt - Date.now() - 60_000);
+    const timer = window.setTimeout(() => {
+      void inventoryApi.restoreSession().then((session) => {
+        setUser(session?.user ?? null);
+      });
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [user]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ready,
