@@ -21,6 +21,7 @@ export default defineConfig({
       products: `${productsSource}products`,
       orders: `${ordersSource}orders`,
       users: `${ordersSource}users`,
+      warehouses: `${ordersSource}warehouses`,
       database: `${productsSource}database`,
       generated: `${productsSource}generated`,
       inventory: `${gatewaySource}inventory`,

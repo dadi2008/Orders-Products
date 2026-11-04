@@ -6,6 +6,16 @@ CREATE DATABASE IF NOT EXISTS orders_products
   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE orders_products;
 
+CREATE TABLE warehouses (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(120) NOT NULL,
+  address VARCHAR(500) NOT NULL,
+  latitude DOUBLE NOT NULL,
+  longitude DOUBLE NOT NULL,
+  created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id)
+);
+
 CREATE TABLE users (
   id INT NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,

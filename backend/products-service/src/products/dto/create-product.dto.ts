@@ -5,6 +5,9 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  IsNumber,
+  Min,
+  Max,
 } from "class-validator";
 import {
   ProductCondition,
@@ -12,6 +15,11 @@ import {
 } from "generated/prisma/client";
 
 export class CreateProductDto {
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  @Max(9999999999.99)
+  price: number = 0;
+
   @IsInt()
   orderId!: number;
 

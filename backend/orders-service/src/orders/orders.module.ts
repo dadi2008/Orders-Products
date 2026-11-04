@@ -8,6 +8,7 @@ import { OrdersOutboxPublisher } from "orders/outbox/orders-outbox.publisher";
 import { OrdersService } from "orders/orders.service";
 import { UsersController } from "users/users.controller";
 import { UsersService } from "users/users.service";
+import { WarehousesController } from "warehouses/warehouses.controller";
 
 @Module({
   imports: [
@@ -30,7 +31,7 @@ import { UsersService } from "users/users.service";
       },
     ]),
   ],
-  controllers: [OrdersController, UsersController],
+  controllers: [OrdersController, UsersController, WarehousesController],
   providers: [OrdersService, OrdersOutboxPublisher, UsersService],
 })
 export class OrdersModule {}

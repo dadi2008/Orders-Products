@@ -47,6 +47,7 @@ export type UsersPage = {
 };
 
 export type CreateProductData = {
+  price: number;
   orderId: number;
   title: string;
   serialNumber?: string;
@@ -54,6 +55,14 @@ export type CreateProductData = {
   condition: ProductCondition;
   status: ProductStatus;
   photo?: MediaUpload;
+};
+
+export type Warehouse = {
+  id: number;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
 };
 
 export type Order = {

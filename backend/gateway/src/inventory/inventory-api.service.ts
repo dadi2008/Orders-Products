@@ -3,6 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import axios, { AxiosError, AxiosInstance } from "axios";
 import type { CreateOrderInput } from "inventory/graphql/inputs/create-order.input";
 import type { CreateProductInput } from "inventory/graphql/inputs/create-product.input";
+import type { CreateWarehouseInput, WarehouseModel } from "inventory/graphql/models/warehouse.model";
 import type {
   InventoryOrder,
   InventoryProduct,
@@ -86,6 +87,7 @@ export class InventoryApiService {
         orderId: input.orderId,
         orderTitle: order.title,
         title: input.title,
+        price: input.price,
         serialNumber: input.serialNumber,
         type: input.type,
         condition: input.condition,
@@ -93,6 +95,14 @@ export class InventoryApiService {
         photoUrl: input.photoUrl,
       },
     });
+  }
+
+  findWarehouses() {
+    return this.request<WarehouseModel[]>(this.orders, "/warehouses");
+  }
+
+  createWarehouse(input: CreateWarehouseInput) {
+    return this.request<WarehouseModel>(this.orders, "/warehouses", { method: "POST", data: input });
   }
 
   findUsers(

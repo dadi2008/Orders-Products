@@ -17,6 +17,7 @@ describe("ProductsController", () => {
     await expect(controller.byOrder("4")).resolves.toEqual([]);
     await expect(
       controller.create({
+        price: 234,
         orderId: 4,
         orderTitle: "Приход",
         title: "Монитор",
@@ -29,6 +30,7 @@ describe("ProductsController", () => {
     expect(products.findAll).toHaveBeenCalledWith("Monitors");
     expect(products.findByOrder).toHaveBeenCalledWith(4);
     expect(products.create).toHaveBeenCalledWith({
+      price: 234,
       orderId: 4,
       orderTitle: "Приход",
       title: "Монитор",

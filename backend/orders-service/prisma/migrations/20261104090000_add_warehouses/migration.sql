@@ -1,0 +1,9 @@
+CREATE TABLE "Warehouse" (
+  "id" SERIAL NOT NULL,
+  "name" VARCHAR(120) NOT NULL,
+  "address" VARCHAR(500) NOT NULL,
+  "latitude" DOUBLE PRECISION NOT NULL,
+  "longitude" DOUBLE PRECISION NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "Warehouse_pkey" PRIMARY KEY ("id")
+);

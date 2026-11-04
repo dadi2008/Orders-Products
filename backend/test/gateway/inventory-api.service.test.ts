@@ -100,6 +100,7 @@ describe("InventoryApiService", () => {
       service.createProduct({
         orderId: 3,
         title: "Монитор",
+        price: 234,
         condition: ProductCondition.NEW,
         status: ProductStatus.AVAILABLE,
       }),
@@ -124,6 +125,7 @@ describe("InventoryApiService", () => {
         orderId: 3,
         orderTitle: "Workstation upgrade",
         title: "Монитор",
+        price: 234,
         condition: "NEW",
         status: "AVAILABLE",
       },

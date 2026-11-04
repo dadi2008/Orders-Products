@@ -14,7 +14,8 @@
       "database/*": ["database/*"],
       "generated/*": ["generated/*"],
       "helpers/*": ["helpers/*"],
-      "orders/*": ["orders/*"]
+      "orders/*": ["orders/*"],
+      "warehouses/*": ["warehouses/*"]
     },
     "outDir": "dist"
   },

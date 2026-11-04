@@ -17,6 +17,7 @@ import {
 } from "inventory/graphql/models/inventory.model";
 import { MediaStorageService } from "inventory/media-storage.service";
 import { CacheService } from "inventory/cache.service";
+import { CreateWarehouseInput, WarehouseModel } from "inventory/graphql/models/warehouse.model";
 import type {
   InventoryOrder,
   InventoryPrice,
@@ -32,6 +33,18 @@ export class InventoryResolver {
     private readonly media?: MediaStorageService,
     private readonly cache?: CacheService,
   ) {}
+
+  @Query(() => [WarehouseModel])
+  warehouses() {
+    return this.cacheValue("inventory:warehouses", () => this.inventory.findWarehouses());
+  }
+
+  @Mutation(() => WarehouseModel)
+  async createWarehouse(@Args("input") input: CreateWarehouseInput) {
+    const warehouse = await this.inventory.createWarehouse(input);
+    await this.invalidate("inventory:warehouses");
+    return warehouse;
+  }
 
   @Query(() => [OrderModel])
   async orders(
@@ -119,6 +132,7 @@ export class InventoryResolver {
       serialNumber: input.serialNumber,
       type: input.type,
       condition: input.condition,
+      price: input.price,
       status: input.status,
       photoUrl,
     });

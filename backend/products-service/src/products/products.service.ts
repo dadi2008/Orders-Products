@@ -77,7 +77,7 @@ export class ProductsService {
         orderId: input.orderId,
         orderTitle: input.orderTitle,
         prices: {
-          create: { value: 0, currency: "USD", isDefault: true },
+          create: { value: input.price ?? 0, currency: "USD", isDefault: true },
         },
       },
       include: { prices: true },

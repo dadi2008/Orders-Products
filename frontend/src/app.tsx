@@ -14,6 +14,7 @@ const UsersPage = lazy(() => import("pages/users-page"));
 const SettingsPage = lazy(() => import("pages/settings-page"));
 const AnalyticsPage = lazy(() => import("pages/analytics-page"));
 const AuthPage = lazy(() => import("pages/auth-page"));
+const WarehousesPage = lazy(() => import("pages/warehouses-page"));
 
 export function App() {
   return (
@@ -65,6 +66,7 @@ function ProtectedApplication() {
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/warehouses" element={<WarehousesPage />} />
           <Route path="/users" element={<UsersPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate replace to="/orders" />} />

@@ -13,6 +13,7 @@ import { toMediaUpload } from "lib/media";
 export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
+  const [price, setPrice] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
   const [type, setType] = useState("Мониторы");
   const [status, setStatus] = useState<ProductStatus>("AVAILABLE");
@@ -32,6 +33,7 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
       await onSubmit({
         orderId: order.id,
         title: title.trim(),
+        price: Number(price),
         serialNumber: serialNumber.trim() || undefined,
         type: type.trim() || undefined,
         condition,
@@ -66,6 +68,18 @@ export function ProductForm({ order, onClose, onSubmit }: ProductFormProps) {
               onChange={(event) => setTitle(event.target.value)}
               maxLength={120}
               autoFocus
+            />
+          </label>
+          <label>
+            {t("productPrice")}
+            <input
+              type="number"
+              min="0"
+              max="9999999999.99"
+              step="0.01"
+              required
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
             />
           </label>
           <label>

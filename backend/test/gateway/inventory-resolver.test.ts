@@ -102,6 +102,7 @@ describe("InventoryResolver", () => {
     ).resolves.toEqual(expect.objectContaining({ id: 2 }));
     await expect(
       resolver.createProduct({
+        price: 234,
         orderId: 2,
         title: "Монитор",
         condition: ProductCondition.NEW,
@@ -115,6 +116,7 @@ describe("InventoryResolver", () => {
       title: "Hardware replenishment",
     });
     expect(inventory.createProduct).toHaveBeenCalledWith({
+      price: 234,
       orderId: 2,
       title: "Монитор",
       condition: "NEW",

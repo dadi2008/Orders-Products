@@ -98,7 +98,7 @@ describe("ProductsService", () => {
       id: 9,
       orderId: 4,
       orderTitle: "Приход",
-      prices: [{ value: 0, currency: "USD", isDefault: true }],
+      prices: [{ value: 234, currency: "USD", isDefault: true }],
     };
     const create = vi.fn().mockResolvedValue(created);
     const service = new ProductsService({ product: { create } } as never);
@@ -108,6 +108,7 @@ describe("ProductsService", () => {
         orderId: 4,
         orderTitle: "Приход",
         title: "Монитор",
+        price: 234,
         condition: "NEW",
         status: "AVAILABLE",
       }),
@@ -123,6 +124,7 @@ describe("ProductsService", () => {
           type: "Мониторы",
           condition: "NEW",
           status: "AVAILABLE",
+          prices: { create: { value: 234, currency: "USD", isDefault: true } },
         }),
         include: { prices: true },
       }),

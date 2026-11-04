@@ -24,6 +24,7 @@ import type {
   Product,
   User,
   UsersPage,
+  Warehouse,
 } from "common/types/inventory";
 
 const client = new GraphQLClient(
@@ -33,6 +34,7 @@ const client = new GraphQLClient(
   ).toString(),
 );
 const cache = new Map<string, { value: unknown; expiresAt: number }>();
+const warehouseFields = "id name address latitude longitude";
 const pending = new Map<string, Promise<unknown>>();
 const accessTokenKey = "inventory-access-token";
 const refreshTokenKey = "inventory-refresh-token";
@@ -207,6 +209,18 @@ export const inventoryApi = {
     );
     invalidateCache();
     return toOrder(data.createOrder);
+  },
+  async getWarehouses(): Promise<Warehouse[]> {
+    const data = await cachedRequest<{ warehouses: Warehouse[] }>(`query { warehouses { ${warehouseFields} } }`);
+    return data.warehouses;
+  },
+  async createWarehouse(input: Omit<Warehouse, "id" | "latitude" | "longitude"> & { latitude?: number; longitude?: number }): Promise<Warehouse> {
+    const data = await request<{ createWarehouse: Warehouse }>(
+      `mutation CreateWarehouse($input: CreateWarehouseInput!) { createWarehouse(input: $input) { ${warehouseFields} } }`,
+      { input },
+    );
+    invalidateCache();
+    return data.createWarehouse;
   },
   async createProduct(data: CreateProductData): Promise<Product> {
     const result = await request<{ createProduct: Product }>(

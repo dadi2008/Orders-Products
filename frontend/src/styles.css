@@ -37,6 +37,15 @@ button {
 .app-shell {
   min-height: 100vh;
 }
+.warehouse-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.warehouse-form { display: flex; flex-direction: column; gap: 16px; }
+.warehouse-form label { display: flex; flex-direction: column; gap: 8px; }
+.warehouse-form input { width: 100%; padding: 12px; border: 1px solid #d3dfe4; border-radius: 3px; }
+.warehouse-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow: auto; margin-bottom: 16px; }
+.warehouse-item { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid #d3dfe4; border-radius: 3px; background: white; color: inherit; text-align: left; overflow-wrap: anywhere; }
+.warehouse-item--active { border-color: #8bc43a; background: #f5faef; }
+@media (max-width: 760px) { .warehouse-grid { grid-template-columns: 1fr; } }
+
 .auth-page {
   display: grid;
   min-height: 100vh;
