@@ -27,6 +27,8 @@ The frontend is split by business domains into Orders and Products feature appli
 
 ## Start with Docker
 
+For deployment to a Google Cloud VM through GitHub Actions, see [the deployment guide](docs/deployment-google-cloud.md).
+
 ```bash
 docker compose up --build
 ```

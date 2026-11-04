@@ -8,6 +8,10 @@ COPY backend/realtime-service/package.json backend/realtime-service/package.json
 COPY frontend/package.json frontend/package.json
 RUN npm ci
 COPY . .
+ARG VITE_GRAPHQL_URL=/graphql
+ARG VITE_SOCKET_URL=http://localhost:3003
+ENV VITE_GRAPHQL_URL=$VITE_GRAPHQL_URL
+ENV VITE_SOCKET_URL=$VITE_SOCKET_URL
 RUN npm run db:generate && npm run build
 
 FROM base AS gateway
