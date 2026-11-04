@@ -9,10 +9,6 @@ services:
   kafka:
     restart: unless-stopped
 
-  migrate:
-    # Production databases must not be populated with demo users or products.
-    command: sh -c "npx prisma migrate deploy --config backend/orders-service/prisma.config.ts && npx prisma migrate deploy --config backend/products-service/prisma.config.ts"
-
   orders-service:
     restart: unless-stopped
   products-service:

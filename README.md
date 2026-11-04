@@ -35,6 +35,8 @@ docker compose up --build
 
 Open `http://localhost:3005`. The migration container creates the database schema and seeds sample records before the API services start.
 
+Both local Docker startup and the production workflow automatically seed four sample arrivals, six products and 20 users. Repeated seeds add missing sample records without overwriting existing users or products. Demo accounts use `user1@inventory.local` through `user20@inventory.local` with initial password `Inventory123!`.
+
 Deleting an order is eventually consistent: orders-service persists the deletion and emits `inventory.order.deleted`; products-service consumes that event in the `products-service-orders` group and idempotently removes the associated products.
 
 Set `ORDERS_POSTGRES_PASSWORD`, `PRODUCTS_POSTGRES_PASSWORD`, `JWT_ACCESS_SECRET`, and `JWT_REFRESH_SECRET` in `.env` before launching Docker Compose. The two PostgreSQL instances are isolated: Orders owns `orders-postgres`, Products owns `products-postgres`.

@@ -4,6 +4,8 @@ import {
   ProductCondition,
   ProductStatus,
 } from "../src/generated/prisma/client";
+import { PrismaClient as OrdersPrismaClient } from "../../orders-service/src/generated/prisma/client";
+import { defaultOrders } from "../../orders-service/prisma/seed-data";
 
 const connectionString = process.env.PRODUCTS_DATABASE_URL;
 if (!connectionString) throw new Error("PRODUCTS_DATABASE_URL is required");
@@ -12,13 +14,35 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString }),
 });
 
+const ordersConnectionString = process.env.ORDERS_DATABASE_URL;
+if (!ordersConnectionString) throw new Error("ORDERS_DATABASE_URL is required");
+const ordersPrisma = new OrdersPrismaClient({
+  adapter: new PrismaPg({ connectionString: ordersConnectionString }),
+});
+
 async function main() {
-  if ((await prisma.product.count()) > 0) return;
-  const products = await Promise.all(
-    [1, 2, 3, 4, 5, 6].map((index) =>
-      prisma.product.create({
+  const orders = await Promise.all(
+    defaultOrders.map((_, index) =>
+      ordersPrisma.order.findFirst({
+        where: { description: `inventory-seed:order:${String(index + 1)}` },
+        orderBy: { id: "asc" },
+      }),
+    ),
+  );
+  if (orders.some((order) => !order))
+    throw new Error(
+      "Default orders are missing; run the orders seed before the products seed",
+    );
+  await prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(71432002)`;
+    for (const index of [1, 2, 3, 4, 5, 6]) {
+      const serialNumber = `SN-${String(123456780 + index)}`;
+      if (await tx.product.findUnique({ where: { serialNumber } })) continue;
+      const order = orders[(index - 1) % 4];
+      if (!order) throw new Error("Default order is missing");
+      await tx.product.create({
         data: {
-          serialNumber: `SN-${String(123456780 + index)}`,
+          serialNumber,
           title:
             index % 2
               ? "ASUS ROG Swift OLED PG27AQDM"
@@ -32,13 +56,8 @@ async function main() {
           guaranteeStart: new Date("2025-04-06T00:00:00.000Z"),
           guaranteeEnd: new Date("2028-04-06T00:00:00.000Z"),
           receivedAt: new Date(`2025-0${(index % 4) + 1}-06T12:09:33.000Z`),
-          orderId: ((index - 1) % 4) + 1,
-          orderTitle: [
-            "Длинное предлинное длиннючее название прихода",
-            "Длинное название прихода",
-            "Длинное предлинное длиннючее название прихода",
-            "Длинное предлинное название прихода",
-          ][(index - 1) % 4],
+          orderId: order.id,
+          orderTitle: order.title,
           prices: {
             create: [
               { value: 2500.85, currency: "USD", isDefault: false },
@@ -46,10 +65,10 @@ async function main() {
             ],
           },
         },
-      }),
-    ),
-  );
-  console.log(`Seeded ${String(products.length)} default products`);
+      });
+    }
+  });
+  console.log("Default products ready");
 }
 
 void main()
@@ -57,4 +76,6 @@ void main()
     console.error(error);
     process.exitCode = 1;
   })
-  .finally(() => prisma.$disconnect());
+  .finally(() =>
+    Promise.all([prisma.$disconnect(), ordersPrisma.$disconnect()]),
+  );

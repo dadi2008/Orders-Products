@@ -34,7 +34,8 @@ Secrets are passed to Compose as process environment variables. The workflow doe
 - Pull requests use GitHub-hosted runners and never run the deployment job or receive deployment secrets.
 - Production deploys are serialized to avoid simultaneous Compose updates.
 - Images are built on the VM from the checked-out commit; no container registry setup is needed.
-- Compose runs migrations before starting dependent services, without demo seeds. On a fresh database, register your first user through the application.
+- Compose runs migrations and seeds before starting dependent services, in both local and production configurations. Seeds ensure four sample arrivals, six products and 20 demo users exist. Existing users and products are preserved, including their passwords and prices; missing seed records are added without duplicating existing records. Products reference the actual seeded arrival IDs, including on databases that already contain user-created arrivals.
+- Demo accounts `user1@inventory.local` through `user20@inventory.local` initially use password `Inventory123!`. These are test accounts intended for QA; their known credentials must be considered before making this demo deployment publicly accessible.
 - PostgreSQL data and uploaded media use persistent named Docker volumes in the fixed Compose project `orders-products-production`. Checkout cleanup does not delete them.
 - The web image uses same-origin GraphQL and Socket.IO; the browser does not connect to `localhost:3003` on users' computers.
 - The workflow waits for Compose readiness, then checks the web and health endpoints.
